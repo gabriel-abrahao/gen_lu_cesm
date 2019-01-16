@@ -1,5 +1,5 @@
 load "~/lib_abrahao.ncl"
-; Generate a potential vegetation file in the reference grid using a high resolution map
+; Generate a potential vegetation file in the reference grid using the high resolution map from Foley and Ramankutty (1999)
 begin
 
 inputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/input/"
