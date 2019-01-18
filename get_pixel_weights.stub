@@ -1,6 +1,7 @@
 C NCLFORTSTART
-  function get_pixel_weights(inplats,inplatn,inplonw,inplone,inpnlat,inpnlon,outlats,outlatn,outlonw,outlone,outnlat,outnlon)
-  integer inpnlat,inpnlon,outnlat,outnlon
+  subroutine get_pixel_weights(wgt,outi,outj,inplats,inplatn,inplonw,inplone,inpnlat,inpnlon,outlats,outlatn,outlonw,outlone,outnlat,outnlon)
+  integer inpnlat,inpnlon,outnlat,outnlon,outi,outj
+  real*8 wgt(inpnlon,inpnlat)
   real*8 inplats(inpnlon,inpnlat),inplatn(inpnlon,inpnlat),inplonw(inpnlon,inpnlat),inplone(inpnlon,inpnlat)
   real*8 outlats(outnlon,outnlat),outlatn(outnlon,outnlat),outlonw(outnlon,outnlat),outlone(outnlon,outnlat)
 C NCLEND

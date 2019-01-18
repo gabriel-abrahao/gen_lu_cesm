@@ -62,8 +62,8 @@ lonvar = (lone(0,:) + lonw(0,:))/2.0d0
 latvar = (lats(:,0) + latn(:,0))/2.0d0
 
 
-printVarSummary(vegvar)
-printVarSummary(refvar)
+; printVarSummary(vegvar)
+; printVarSummary(refvar)
 
 dims = dimsizes(refvar)
 nlatref = dims(0)
@@ -83,8 +83,7 @@ veglats = new((/inpnlat,inpnlon/),double)
 veglatn = new((/inpnlat,inpnlon/),double)
 veglonw = new((/inpnlat,inpnlon/),double)
 veglone = new((/inpnlat,inpnlon/),double)
-printVarSummary(veglats)
-printVarSummary(vecveglats)
+
 veglats = conform(veglats,vecveglats,0)
 veglatn = conform(veglatn,vecveglatn,0)
 veglonw = conform(veglonw,vecveglonw,1)
@@ -101,7 +100,7 @@ outvar!2 = "lon"
 outvar&lat = latvar
 outvar&lon = lonvar
 
-printVarSummary(outvar)
+; printVarSummary(outvar)
 
 ;print(min(lats))
 ;print(min(latn))
@@ -109,15 +108,22 @@ printVarSummary(outvar)
 ;do i = 0, nlatref-1
 ;	print(i + " of " + (nlatref-1))
 ;	do j = 0, nlonref-1
-i = 91
-	j = 239
+;i = 91
+;	j = 239
+i = 2
+	j = 2
 
-print(inpnlat)
-printVarSummary(veglats)
-printVarSummary(lats)
+; print(inpnlat)
+; printVarSummary(veglats)
+; printVarSummary(lats)
 ;exit
-		lala = EX01::get_pixel_weights(veglats,veglatn,veglonw,veglone,inpnlat,inpnlon,lats,latn,lonw,lone,outnlat,outnlon)
-		print(lala)
+		wgt = new((/inpnlat,inpnlon/),double)
+		wgt = 0.0
+		print("================== Start Call...")
+		EX01::get_pixel_weights(wgt,(i+1),(j+1),veglats,veglatn,veglonw,veglone,inpnlat,inpnlon,lats,latn,lonw,lone,outnlat,outnlon)
+		print("================== End Call...")
+		dum_write(wgt,"wgt")
+		;print(dum)
 		exit
 		;Here we get the coordinates of the cells boundaries
 		latnpix = veglatn({lats(i,j):latn(i,j)})
