@@ -79,6 +79,17 @@ veglatn!0 = "lat"
 veglats&lat = veglats
 veglatn&lat = veglatn
 
+; Indexes for reference
+indveglatn = ispan(0,dimsizes(veglatn)-1,1)
+indveglats = ispan(0,dimsizes(veglats)-1,1)
+indveglonw = ispan(0,dimsizes(veglonw)-1,1)
+indveglone = ispan(0,dimsizes(veglone)-1,1)
+copy_VarCoords(veglatn,indveglatn)
+copy_VarCoords(veglats,indveglats)
+copy_VarCoords(veglonw,indveglonw)
+copy_VarCoords(veglone,indveglone)
+
+
 ; Create the output (pft, lat, lon) variable with PFT fractions
 outvar = new((/npft, nlatref, nlonref/), typeof(refvar))
 copy_VarCoords_1(vegvar,outvar) ;Copy PFT definition
@@ -99,23 +110,39 @@ printVarSummary(outvar)
 ;	do j = 0, nlonref-1
 i = 91
 	j = 239
-		
-;		latrange = latn(i,j)-lats(i,j)
-;		lonrange = lone(i,j)-lonw(i,j)
-;		lonepix = veglone({lonw(i,j):lone(i,j)})
-;		lonwpix = veglonw({lonw(i,j):lone(i,j)})
-;		latnpix = veglatn({lats(i,j):latn(i,j)})
-;		latspix = veglats({lats(i,j):latn(i,j)})
-;		print(latwpix)
-;		print(latepix)
-;		exit
-print("lats(i,j) = " + lats(i,j))
-print("latn(i,j) = " + latn(i,j))
-print("lonw(i,j) = " + lonw(i,j))
-print("lone(i,j) = " + lone(i,j))
-print("latrange = " + latrange)
-print("lonrange = " + lonrange)
-print(lonpix)
+		;Here we get the coordinates of the cells boundaries
+		latnpix = veglatn({lats(i,j):latn(i,j)})
+		latspix = veglats({lats(i,j):latn(i,j)})
+		lonepix = veglone({lonw(i,j):lone(i,j)})
+		lonwpix = veglonw({lonw(i,j):lone(i,j)})
+		fulllatnpix = array_append_record(latnpix,veglatn(indveglats({latspix(dimsizes(latspix)-1)})),0)
+		fulllatspix = array_append_record(veglats(indveglatn({latnpix(0)})),latspix,0)
+		fulllonepix = array_append_record(lonepix,veglone(indveglonw({lonwpix(dimsizes(lonwpix)-1)})),0)
+		fulllonwpix = array_append_record(veglonw(indveglone({lonepix(0)})),lonwpix,0)
+		delete(latspix)
+		delete(latnpix)
+		delete(lonwpix)
+		delete(lonepix)
+		latspix = fulllatspix
+		latnpix = fulllatnpix
+		lonwpix = fulllonwpix
+		lonepix = fulllonepix
+		delete(fulllatspix)
+		delete(fulllatnpix)
+		delete(fulllonwpix)
+		delete(fulllonepix)
+
+
+;print("lats(i,j) = " + lats(i,j))
+;print("latn(i,j) = " + latn(i,j))
+;print("lonw(i,j) = " + lonw(i,j))
+;print("lone(i,j) = " + lone(i,j))
+;print(latnpix)
+;print(latspix)
+;print(lonepix)
+;print(lonwpix)
+
+
 exit
 
 		vegpix = vegvar(:,{lats(i,j):latn(i,j)},{lonw(i,j):lone(i,j)})
