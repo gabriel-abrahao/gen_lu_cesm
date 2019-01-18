@@ -117,6 +117,7 @@ printVarSummary(veglats)
 printVarSummary(lats)
 ;exit
 		lala = EX01::get_pixel_weights(veglats,veglatn,veglonw,veglone,inpnlat,inpnlon,lats,latn,lonw,lone,outnlat,outnlon)
+		print(lala)
 		exit
 		;Here we get the coordinates of the cells boundaries
 		latnpix = veglatn({lats(i,j):latn(i,j)})
