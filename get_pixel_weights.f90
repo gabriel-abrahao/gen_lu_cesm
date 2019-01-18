@@ -26,7 +26,7 @@ subroutine get_pixel_weights(wgt,outi,outj,inplats,inplatn,inplonw,inplone, &
   tlatn = outlatn(outj,outi)
   tlone = outlone(outj,outi)
   tlonw = outlonw(outj,outi)
-  write(*,*) tlats, tlatn, tlonw, tlone
+  ! write(*,*) tlats, tlatn, tlonw, tlone
 
   ! i = 5
   ! j = 720
@@ -72,14 +72,14 @@ subroutine get_pixel_weights(wgt,outi,outj,inplats,inplatn,inplonw,inplone, &
             end if
           end if
 
-          write(*,*) i,j
-          write(*,*) "inplats(j,i) = ",inplats(j,i)
-          write(*,*) "inplatn(j,i) = ",inplatn(j,i)
-          write(*,*) "inplonw(j,i) = ",inplonw(j,i)
-          write(*,*) "inplone(j,i) = ",inplone(j,i)
-          write(*,*) "latwgt = ",latwgt
-          write(*,*) "lonwgt = ",lonwgt
-          write(*,*) "latwgt*lonwgt = ",latwgt*lonwgt
+          ! write(*,*) i,j
+          ! write(*,*) "inplats(j,i) = ",inplats(j,i)
+          ! write(*,*) "inplatn(j,i) = ",inplatn(j,i)
+          ! write(*,*) "inplonw(j,i) = ",inplonw(j,i)
+          ! write(*,*) "inplone(j,i) = ",inplone(j,i)
+          ! write(*,*) "latwgt = ",latwgt
+          ! write(*,*) "lonwgt = ",lonwgt
+          ! write(*,*) "latwgt*lonwgt = ",latwgt*lonwgt
 
 
           wgt(j,i) = latwgt*lonwgt
@@ -89,7 +89,7 @@ subroutine get_pixel_weights(wgt,outi,outj,inplats,inplatn,inplonw,inplone, &
 end do !i, lats
 end do !j, lons
 
-write(*,*) maxval(wgt)
+! write(*,*) maxval(wgt)
 
 return
 

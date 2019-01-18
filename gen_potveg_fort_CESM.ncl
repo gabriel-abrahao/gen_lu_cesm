@@ -100,74 +100,33 @@ outvar!2 = "lon"
 outvar&lat = latvar
 outvar&lon = lonvar
 
+; Weights of a single pixel
+wgt = new((/inpnlat,inpnlon/),double)
+
 ; printVarSummary(outvar)
 
 ;print(min(lats))
 ;print(min(latn))
 ;
-;do i = 0, nlatref-1
-;	print(i + " of " + (nlatref-1))
-;	do j = 0, nlonref-1
+do i = 0, nlatref-1
+	print(i + " of " + (nlatref-1))
+	do j = 0, nlonref-1
 ;i = 91
 ;	j = 239
-i = 2
-	j = 2
+; i = 2
+; 	j = 2
 
-; print(inpnlat)
-; printVarSummary(veglats)
-; printVarSummary(lats)
-;exit
-		wgt = new((/inpnlat,inpnlon/),double)
+		; Zero all weights first
 		wgt = 0.0
-		print("================== Start Call...")
+		; print("================== Start Call...")
 		EX01::get_pixel_weights(wgt,(i+1),(j+1),veglats,veglatn,veglonw,veglone,inpnlat,inpnlon,lats,latn,lonw,lone,outnlat,outnlon)
-		print("================== End Call...")
-		dum_write(wgt,"wgt")
-		;print(dum)
-		exit
-		;Here we get the coordinates of the cells boundaries
-		latnpix = veglatn({lats(i,j):latn(i,j)})
-		latspix = veglats({lats(i,j):latn(i,j)})
-		lonepix = veglone({lonw(i,j):lone(i,j)})
-		lonwpix = veglonw({lonw(i,j):lone(i,j)})
-		fulllatnpix = array_append_record(latnpix,veglatn(indveglats({latspix(dimsizes(latspix)-1)})),0)
-		fulllatspix = array_append_record(veglats(indveglatn({latnpix(0)})),latspix,0)
-		fulllonepix = array_append_record(lonepix,veglone(indveglonw({lonwpix(dimsizes(lonwpix)-1)})),0)
-		fulllonwpix = array_append_record(veglonw(indveglone({lonepix(0)})),lonwpix,0)
-		delete(latspix)
-		delete(latnpix)
-		delete(lonwpix)
-		delete(lonepix)
-		latspix = fulllatspix
-		latnpix = fulllatnpix
-		lonwpix = fulllonwpix
-		lonepix = fulllonepix
-		delete(fulllatspix)
-		delete(fulllatnpix)
-		delete(fulllonwpix)
-		delete(fulllonepix)
+		; print("================== End Call...")
 
 
-;print("lats(i,j) = " + lats(i,j))
-;print("latn(i,j) = " + latn(i,j))
-;print("lonw(i,j) = " + lonw(i,j))
-;print("lone(i,j) = " + lone(i,j))
-;print(latnpix)
-;print(latspix)
-;print(lonepix)
-;print(lonwpix)
 
-
-exit
-
-		vegpix = vegvar(:,{lats(i,j):latn(i,j)},{lonw(i,j):lone(i,j)})
-		print(dimsizes(vegpix))
-		print(vegpix)
-		print(dim_sum_n_Wrap(vegpix,0))
-
-		k = 0
-
-
+		do k = 0,npft-1
+			outvar(k,i,j) = sum(wgt*vegvar(k,i,j))/sum(wgt)
+		end do
 
 ;		if (all(ismissing(vegpix))) then
 ;			outvar(:,i,j) = 0.0
@@ -181,11 +140,9 @@ exit
 ;			end do ;k, pfts
 ;		end if ; all(ismissing(vegpix))
 
-exit
 
-		delete(vegpix) ; Pixel size can vary
-;	end do ;j, lons
-;end do ;i, lats
+	end do ;j, lons
+end do ;i, lats
 
 ; Write output
 system("rm " + outfname)
