@@ -1,0 +1,8 @@
+function get_pixel_weights(inplats,inplatn,inplonw,inplone,inpnlat,inpnlon,outlats,outlatn,outlonw,outlone,outnlat,outnlon)
+  integer inpnlat,inpnlon,outnlat,outnlon
+  real*8 inplats(inpnlat,inpnlon),inplatn(inpnlat,inpnlon),inplonw(inpnlat,inpnlon),inplone(inpnlat,inpnlon)
+  real*8 outlats(outnlat,outnlon),outlatn(outnlat,outnlon),outlonw(outnlat,outnlon),outlone(outnlat,outnlon)
+  integer poi
+  poi = 9876
+  return
+end function
