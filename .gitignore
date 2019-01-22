@@ -1,2 +1,4 @@
 input/
 out_potveg/
+*.o
+*.mod
