@@ -18,24 +18,11 @@ program gen_potveg_CESM
 
   outfname = trim(ADJUSTL(outputfolder))//"mksrf_pft_potv_CN_0.9x1.25.nc"
 
-  ! status = nf90_open(reffname, NF90_NOWRITE, ncid)
-  ! status = nf90_inq_varid(ncid,"PCT_PFT",varid)
-  ! status = nf90_inquire_variable(ncid,varid,dimids = dimids)
-  ! status = nf90_inquire_dimension(ncid,dimids(1),len = nlon)
-  ! status = nf90_inquire_dimension(ncid,dimids(2),len = nlat)
-  ! status = nf90_inquire_dimension(ncid,dimids(3),len = npft)
-  ! status = nf90_inquire_dimension(ncid,dimids(4),len = ntim)
-
-  ! allocate(vardata(nlon,nlat,npft,ntim))
-
-  ! status = nf90_get_var(ncid,varid,vardata)
-
   call get_ref_dimzises(reffname,"PCT_PFT",nlat,nlon,ntim,npft)
 
   write(*,*) nlon,nlat,npft,ntim
 
   call get_ref_grid(reffname,nlat,nlon,lats,latn,lonw,lone)
-  write(*,*) shape(lats)
 
 
 end program gen_potveg_CESM

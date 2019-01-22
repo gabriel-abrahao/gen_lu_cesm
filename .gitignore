@@ -1,4 +1,5 @@
 input/
 out_potveg/
 *.o
+*.exe
 *.mod
