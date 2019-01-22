@@ -20,10 +20,12 @@ program gen_potveg_CESM
 
 ! Get the sizes of the 4D reference file
   call get_ref_dimzises(reffname,"PCT_PFT",refnlat,refnlon,ntim,npft)
-
   write(*,*) refnlon,refnlat,npft,ntim
+
 ! Get the lat lon 2D bounds from the reference file
   call get_ref_grid(reffname,refnlat,refnlon,reflats,reflatn,reflonw,reflone)
 
+  call get_2d_dimsizes(vegfname,"PCT_PFT",vegnlat,vegnlon)
+  write(*,*) vegnlon,vegnlat
 
 end program gen_potveg_CESM

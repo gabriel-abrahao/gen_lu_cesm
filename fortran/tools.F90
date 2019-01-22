@@ -58,4 +58,27 @@ contains
     return
   end subroutine get_ref_grid
 
+  subroutine get_2d_dimsizes(fname,varname,nlat,nlon)
+    use netcdf
+    implicit none
+    character(*), INTENT(IN) :: fname,varname
+    integer ncid
+    integer status, varid
+    integer nlat,nlon
+    integer, dimension(nf90_max_var_dims) :: dimids ! To store the dimension ids
+
+    status = nf90_open(trim(ADJUSTL(fname)), NF90_NOWRITE, ncid)
+
+    status = nf90_inq_varid(ncid,trim(ADJUSTL(varname)),varid)
+
+    status = nf90_inquire_variable(ncid,varid,dimids = dimids)
+
+    status = nf90_inquire_dimension(ncid,dimids(1),len = nlon)
+    status = nf90_inquire_dimension(ncid,dimids(2),len = nlat)
+
+    status = nf90_close(ncid)
+
+    return
+  end subroutine get_2d_dimsizes
+
 end module
