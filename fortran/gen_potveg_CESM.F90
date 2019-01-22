@@ -6,8 +6,8 @@ program gen_potveg_CESM
   character*200 inputfolder,outputfolder,reffname,vegfname,outfname
   integer ncid
   integer status, varid
-  integer nlat,nlon,ntim,npft
-  real*8, ALLOCATABLE, DIMENSION(:,:) :: lats,latn,lonw,lone
+  integer vegnlat,vegnlon,refnlat,refnlon,ntim,npft
+  real*8, ALLOCATABLE, DIMENSION(:,:) :: veglats,veglatn,veglonw,veglone
   real*8, ALLOCATABLE, DIMENSION(:,:,:,:) :: vardata
 
   inputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/input/"
@@ -18,11 +18,12 @@ program gen_potveg_CESM
 
   outfname = trim(ADJUSTL(outputfolder))//"mksrf_pft_potv_CN_0.9x1.25.nc"
 
-  call get_ref_dimzises(reffname,"PCT_PFT",nlat,nlon,ntim,npft)
+! Get the sizes of the 4D reference file
+  call get_ref_dimzises(reffname,"PCT_PFT",refnlat,refnlon,ntim,npft)
 
-  write(*,*) nlon,nlat,npft,ntim
-
-  call get_ref_grid(reffname,nlat,nlon,lats,latn,lonw,lone)
+  write(*,*) refnlon,refnlat,npft,ntim
+! Get the lat lon 2D bounds from the reference file
+  call get_ref_grid(reffname,refnlat,refnlon,veglats,veglatn,veglonw,veglone)
 
 
 end program gen_potveg_CESM
