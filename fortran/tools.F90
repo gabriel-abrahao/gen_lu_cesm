@@ -264,6 +264,7 @@ contains
     return
   end subroutine flip_lon_global_3d
 
+! Checks if a little interval is at least partially inside a big interval
   function is_inside_vec(biglo,bighi,litlo,lithi)
     real*8 biglo,bighi,litlo,lithi
     logical is_inside_vec
@@ -277,6 +278,7 @@ contains
     return
   end function is_inside_vec
 
+! Checks if a little interval is completely inside a big interval
   function is_contained_vec(biglo,bighi,litlo,lithi)
     real*8 biglo,bighi,litlo,lithi
     logical is_contained_vec
@@ -295,5 +297,25 @@ contains
     return
   end function is_contained_vec
 
+
+    function find_bound_inds_vec(biglo,bighi,litlovec,lithivec)
+      implicit none
+      real*8 biglo,bighi
+      real*8, dimension(:) :: litlovec,lithivec
+
+      integer, dimension(2) :: find_bound_inds_vec
+
+      integer n
+      integer i
+
+      n = size(litlovec)
+
+      i = n/2
+      write(*,*) i
+      ! do while (.not.(is_inside_vec(biglo,bighi,litlovec(i),lithivec(i))))
+      ! end do
+
+      return
+    end function find_bound_inds_vec
 
 end module

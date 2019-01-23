@@ -16,7 +16,9 @@ program gen_potveg_CESM
   integer, pointer :: inpnlon,inpnlat
   integer, pointer :: outnlon,outnlat
 
-  logical poi
+  integer outi,outj,i,j,k,ii,jj, lasti,lastj
+
+  integer bnds(2)
 
   inputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/input/"
   outputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/out_potveg/"
@@ -67,9 +69,17 @@ program gen_potveg_CESM
   outlonw => reflonw
   outlone => reflone
 
-  write(*,*) reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2)
-  write(*,*) is_inside_vec(reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2))
-  write(*,*) is_contained_vec(reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2))
+  ! Put output loop here
+  outi = 1
+  outj = 1
+
+  bnds = find_bound_inds_vec(reflats(j,j),reflatn(j,i),veglats(j,:),veglatn(j,:))
+  ! write(*,*) bnds
+
+
+  ! write(*,*) reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2)
+  ! write(*,*) is_inside_vec(reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2))
+  ! write(*,*) is_contained_vec(reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2))
 
 
 end program gen_potveg_CESM
