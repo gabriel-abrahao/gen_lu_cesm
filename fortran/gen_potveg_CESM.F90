@@ -16,6 +16,8 @@ program gen_potveg_CESM
   integer, pointer :: inpnlon,inpnlat
   integer, pointer :: outnlon,outnlat
 
+  logical poi
+
   inputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/input/"
   outputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/out_potveg/"
 
@@ -65,7 +67,9 @@ program gen_potveg_CESM
   outlonw => reflonw
   outlone => reflone
 
-
+  write(*,*) "PASSEI"
+  poi = is_inside_vec(reflats(1,2),reflatn(1,2),veglats(1,1),veglatn(1,1))
+  write(*,*) poi
 
 
 end program gen_potveg_CESM

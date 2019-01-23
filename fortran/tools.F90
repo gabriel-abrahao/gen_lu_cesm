@@ -260,8 +260,23 @@ contains
     dum3d(1:midl,:,:) = data(midr:nlon,:,:)
     dum3d(midr:nlon,:,:) = data(1:midl,:,:)
     data = dum3d
-    
+
     return
   end subroutine flip_lon_global_3d
+
+  function is_inside_vec(biglo,bighi,litlo,lithi)
+    real*8 biglo,bighi,litlo,lithi
+    logical is_inside_vec
+
+    write(*,*) biglo,bighi,litlo,lithi
+
+    if ( (litlo .ge. biglo .and. litlo .le. bighi) .or. (lithi .ge. biglo .and. lithi .le. bighi)) then
+      is_inside_vec = .true.
+    else
+      is_inside_vec = .false.
+    end if
+
+    return
+  end function is_inside_vec
 
 end module
