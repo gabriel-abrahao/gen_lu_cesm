@@ -70,11 +70,13 @@ program gen_potveg_CESM
   outlone => reflone
 
   ! Put output loop here
-  outi = 1
-  outj = 1
+  outi = 191
+  outj = 288
 
-  bnds = find_bound_inds_vec(reflats(j,j),reflatn(j,i),veglats(j,:),veglatn(j,:))
-  ! write(*,*) bnds
+  ! write(*,*) outlats(outj,outi),outlatn(outj,outi)
+  !write(*,*) veglats(j,:),veglatn(j,:)
+  bnds = find_bound_inds_vec(outlats(outj,outi),outlatn(outj,outi),veglats(1,:),veglatn(1,:))
+  write(*,*) bnds
 
 
   ! write(*,*) reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2)

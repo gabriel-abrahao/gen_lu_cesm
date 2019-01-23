@@ -261,6 +261,18 @@ contains
     dum3d(midr:nlon,:,:) = data(1:midl,:,:)
     data = dum3d
 
+    ! write(*,*) lats(1,1),latn(1,1)
+    ! write(*,*) lats(nlon,1),latn(nlon,1)
+    ! write(*,*) lats(1,nlat),latn(1,nlat)
+    ! write(*,*) lats(nlon,nlat),latn(nlon,nlat)
+    !
+    ! write(*,*) lonw(1,1),lone(1,1)
+    ! write(*,*) lonw(nlon,1),lone(nlon,1)
+    ! write(*,*) lonw(1,nlat),lone(1,nlat)
+    ! write(*,*) lonw(nlon,nlat),lone(nlon,nlat)
+
+
+
     return
   end subroutine flip_lon_global_3d
 
@@ -303,18 +315,92 @@ contains
       real*8 biglo,bighi
       real*8, dimension(:) :: litlovec,lithivec
 
-      integer, dimension(2) :: find_bound_inds_vec
+      integer, dimension(2) :: bnds,find_bound_inds_vec
 
       integer n
-      integer i
+      integer i, maxi, mini, fnd
+      integer iter,maxiter
 
       n = size(litlovec)
 
+      ! The out-of-range case
+      if (biglo.ge.lithivec(n) .or. bighi.le.litlovec(1)) then
+        write(*,*) "find_bound_inds_vec: OUT OF RANGE, you should never have called me"
+        write(*,*) "biglo,bighi,litlovec(1),lithivec(n)"
+        write(*,*) biglo,bighi,litlovec(1),lithivec(n)
+        stop
+      end if
+
+      maxiter = int(log(real(n))) * 2 + 3
+
+      ! write(*,*) "maxiter = ",maxiter
+      ! write(*,*) litlovec(1:5)
+      ! write(*,*) "biglo,bighi = ",biglo,bighi
+
+! write(*,*) litlovec(179:181)
+! stop
       i = n/2
-      write(*,*) i
-      ! do while (.not.(is_inside_vec(biglo,bighi,litlovec(i),lithivec(i))))
+      maxi = n
+      mini = 1
+      iter = 1
+      ! write(*,*) i
+      do while (.not.(is_inside_vec(biglo,bighi,litlovec(i),lithivec(i))))
+        iter = iter + 1
+        !maxi = max(n,i,maxi)
+        !mini = min(1,i,mini)
+        ! write(*,*) i,mini,maxi, iter
+        ! write(*,*) litlovec(i),biglo
+        if (litlovec(i).ge.biglo) then
+          maxi = i
+          i = i - ((i-mini)/2)
+          if ((maxi-mini).eq.1) then ! We are by one
+            i = mini
+          end if
+          ! write(*,*) "PASSEI ESQ"
+        else
+          mini = i
+          i = i + ((maxi-i)/2)
+          if ((maxi-mini).eq.1) then ! We are by one
+            i = maxi
+          end if
+          ! write(*,*) "PASSEI DIR"
+        end if
+        ! write(*,*) i
+        if (iter.ge.maxiter) then
+          write(*,*) "ERROR: find_bound_inds_vec did not find any matches"
+          stop
+        end if
+        !exit
+      end do
+
+      fnd = i
+
+      ! write(*,*) "FOUND ",fnd
+      ! write(*,*) litlovec(i),lithivec(i)
+
+      bnds(:) = fnd
+
+      i = bnds(1)
+      do while (is_inside_vec(biglo,bighi,litlovec(i),lithivec(i)))
+        bnds(1) = i
+        i = i-1
+        if (i.lt.1) exit
+      end do
+      i = bnds(2)
+      do while (is_inside_vec(biglo,bighi,litlovec(i),lithivec(i)) .or. i.lt.1 .or. i.gt.n)
+        bnds(2) = i
+        i = i+1
+        if (i.gt.n) exit
+      end do
+
+      ! write(*,*) "biglo,bighi = ",biglo,bighi
+      ! write(*,*) "bnds = ",bnds
+      ! write(*,*) "Pixels inside:"
+      ! do i = bnds(1),bnds(2)
+      !   write(*,*) litlovec(i),lithivec(i)
       ! end do
 
+      find_bound_inds_vec = bnds
       return
     end function find_bound_inds_vec
 
