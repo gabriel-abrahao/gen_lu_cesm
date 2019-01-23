@@ -38,4 +38,6 @@ program gen_potveg_CESM
 
   !call dum_write_3d("dummy.nc",vegdata,vegnlat,vegnlon,npft) ! Checking
 
+  call flip_lon_global_3d(vegdata,vegnlat,vegnlon,npft,veglats,veglatn,veglonw,veglone)
+
 end program gen_potveg_CESM
