@@ -8,7 +8,7 @@ program gen_potveg_CESM
   integer status, varid
   integer vegnlat,vegnlon,refnlat,refnlon,ntim,npft
   real*8, ALLOCATABLE, DIMENSION(:,:) :: reflats,reflatn,reflonw,reflone,veglats,veglatn,veglonw,veglone
-  real*8, ALLOCATABLE, DIMENSION(:,:) :: vegdata
+  real*8, ALLOCATABLE, DIMENSION(:,:,:) :: vegdata
   !real*8, ALLOCATABLE, DIMENSION(:,:,:,:) :: vardata
 
   inputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/input/"
@@ -33,7 +33,9 @@ program gen_potveg_CESM
 ! Get the lat lon 2D bounds, assuming a regular grid
   call get_veg_grid(vegfname,vegnlat,vegnlon,veglats,veglatn,veglonw,veglone)
 
-  call read_veg_data(vegfname,vegnlat,vegnlon,vegdata)
+! Read the 3d (npft) potential vegetation file
+  call read_veg_data(vegfname,vegnlat,vegnlon,npft,vegdata)
 
+  !call dum_write_3d("dummy.nc",vegdata,vegnlat,vegnlon,npft) ! Checking
 
 end program gen_potveg_CESM

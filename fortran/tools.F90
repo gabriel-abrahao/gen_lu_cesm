@@ -120,4 +120,70 @@ contains
     return
   end subroutine get_veg_grid
 
+  ! Read the potential vegetation data (lon,lat,pft)
+    subroutine read_veg_data(fname,nlat,nlon,npft,data)
+      use netcdf
+      implicit none
+      character(*), INTENT(IN) :: fname
+      integer ncid
+      integer status, varid
+      integer nlat,nlon,npft
+      integer, dimension(nf90_max_var_dims) :: dimids ! To store the dimension ids
+      real*8, ALLOCATABLE, DIMENSION(:,:,:) :: data
+
+      real*8 reslat,reslon ! The lat and lon resolutions of a regular grid
+
+      ALLOCATE(data(nlon,nlat,npft))
+
+      status = nf90_open(fname, NF90_NOWRITE, ncid)
+
+      status = nf90_inq_varid(ncid,"PCT_PFT",varid)
+      status = nf90_get_var(ncid,varid,data)
+
+      status = nf90_close(ncid)
+
+      return
+    end subroutine read_veg_data
+
+    subroutine dum_write_3d(fname,data,nlat,nlon,npft)
+      use netcdf
+      implicit none
+      character(*), INTENT(IN) :: fname
+      integer ncid
+      integer status, varid
+      integer nlat,nlon,npft
+      integer i
+      integer, dimension(3) :: dimids ! To store the dimension ids
+      real*8, DIMENSION(:,:,:), INTENT(IN) :: data
+
+      real*8 reslat,reslon ! The lat and lon resolutions of a regular grid
+
+      ncid = 987
+
+      do i = 1,size(dimids)
+        dimids(i) = i
+      end do
+      varid = i+1
+
+      status = nf90_create(fname, NF90_CLOBBER, ncid)
+
+      status = nf90_def_dim(ncid,"lon",nlon,dimids(1))
+      status = nf90_def_dim(ncid,"lat",nlat,dimids(2))
+      status = nf90_def_dim(ncid,"pft",npft,dimids(3))
+!write(*,*) dimids
+      status = nf90_def_var(ncid,"dummy",nf90_double,dimids(1:3),varid)
+
+      status = nf90_enddef(ncid)
+
+      status = nf90_put_var(ncid,varid,data,(/1,1,1/),(/nlon,nlat,npft/))
+      write(*,*) status
+
+      ! status = nf90_inq_varid(ncid,"PCT_PFT",varid)
+      ! status = nf90_get_var(ncid,varid,data)
+      !
+      status = nf90_close(ncid)
+
+      return
+    end subroutine dum_write_3d
+
 end module
