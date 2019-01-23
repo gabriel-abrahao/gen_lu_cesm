@@ -19,7 +19,8 @@ program gen_potveg_CESM
   inputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/input/"
   outputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/out_potveg/"
 
-  reffname = trim(ADJUSTL(inputfolder))//"surfdata.pftdyn_0.9x1.25_simyr1850-2005_c091008.nc"
+  ! reffname = trim(ADJUSTL(inputfolder))//"surfdata.pftdyn_0.9x1.25_simyr1850-2005_c091008.nc"
+  reffname = trim(ADJUSTL(inputfolder))//"min_surfdata.nc"
   vegfname = trim(ADJUSTL(inputfolder))//"mksrf_pft_potv_CN.nc"
 
   outfname = trim(ADJUSTL(outputfolder))//"mksrf_pft_potv_CN_0.9x1.25.nc"
@@ -63,7 +64,6 @@ program gen_potveg_CESM
   outlatn => reflatn
   outlonw => reflonw
   outlone => reflone
-
 
 
 
