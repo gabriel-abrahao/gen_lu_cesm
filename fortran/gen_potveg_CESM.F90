@@ -8,6 +8,7 @@ program gen_potveg_CESM
   integer status, varid
   integer, TARGET :: vegnlat,vegnlon,refnlat,refnlon,ntim,npft
   real*8, TARGET, ALLOCATABLE, DIMENSION(:,:) :: reflats,reflatn,reflonw,reflone,veglats,veglatn,veglonw,veglone
+  real*8, ALLOCATABLE, DIMENSION(:,:) :: vegmask
   real*8, ALLOCATABLE, DIMENSION(:,:,:) :: vegdata
   real*8, ALLOCATABLE, DIMENSION(:,:,:) :: outdata
 
@@ -51,14 +52,17 @@ program gen_potveg_CESM
 ! Get the lat lon 2D bounds, assuming a regular grid
   call get_veg_grid(vegfname,vegnlat,vegnlon,veglats,veglatn,veglonw,veglone)
 
-! Read the 3d (npft) potential vegetation file
+! Read the 3d (npft) potential vegetation file and its associated land mask
   call read_veg_data(vegfname,vegnlat,vegnlon,npft,vegdata)
+  call read_veg_mask(vegfname,vegnlat,vegnlon,vegmask)
+
 
 ! Flip the longitude variables (TODO: This assumes a lot about the dataset as is, make it more generic)
   call flip_lon_global_3d(vegdata,vegnlat,vegnlon,npft,veglats,veglatn,veglonw,veglone)
 
   ! call dum_write_2d("dummy.nc",veglone,vegnlat,vegnlon) ! Checking
   ! call dum_write_3d("dummy.nc",vegdata,vegnlat,vegnlon,npft) ! Checking
+  ! call dum_write_2d("dummy.nc",vegmask,vegnlat,vegnlon) ! Checking
 
   ! Use pointers to more generic names here (TODO: Refactor the code)
   inpnlon => vegnlon
@@ -154,6 +158,9 @@ program gen_potveg_CESM
           end if
 
           wgt = lonwgt*latwgt
+          ! Check if it's inside the mask
+          if (vegmask(j,i).ne.1) wgt = 0.0d0
+
           totwgt = totwgt + wgt
 
 

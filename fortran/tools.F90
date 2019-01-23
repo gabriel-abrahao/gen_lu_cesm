@@ -145,6 +145,28 @@ contains
     return
   end subroutine read_veg_data
 
+  subroutine read_veg_mask(fname,nlat,nlon,data)
+    use netcdf
+    implicit none
+    character(*), INTENT(IN) :: fname
+    integer ncid
+    integer status, varid
+    integer nlat,nlon,npft
+    integer, dimension(nf90_max_var_dims) :: dimids ! To store the dimension ids
+    real*8, ALLOCATABLE, DIMENSION(:,:) :: data
+
+    ALLOCATE(data(nlon,nlat))
+
+    status = nf90_open(fname, NF90_NOWRITE, ncid)
+
+    status = nf90_inq_varid(ncid,"LANDMASK",varid)
+    status = nf90_get_var(ncid,varid,data)
+
+    status = nf90_close(ncid)
+
+    return
+  end subroutine read_veg_mask
+
   subroutine dum_write_3d(fname,data,nlat,nlon,npft)
     use netcdf
     implicit none
@@ -176,7 +198,7 @@ contains
     status = nf90_enddef(ncid)
 
     status = nf90_put_var(ncid,varid,data,(/1,1,1/),(/nlon,nlat,npft/))
-    
+
     ! status = nf90_inq_varid(ncid,"PCT_PFT",varid)
     ! status = nf90_get_var(ncid,varid,data)
     !
