@@ -176,8 +176,7 @@ contains
     status = nf90_enddef(ncid)
 
     status = nf90_put_var(ncid,varid,data,(/1,1,1/),(/nlon,nlat,npft/))
-    write(*,*) status
-
+    
     ! status = nf90_inq_varid(ncid,"PCT_PFT",varid)
     ! status = nf90_get_var(ncid,varid,data)
     !
@@ -333,8 +332,8 @@ contains
 
     maxiter = int(log(real(n))) * 2 + 3
 
-    ! write(*,*) "maxiter = ",maxiter
-    ! write(*,*) litlovec(1:5)
+    ! ! write(*,*) "maxiter = ",maxiter
+    ! write(*,*) litlovec(n-5:n)
     ! write(*,*) "biglo,bighi = ",biglo,bighi
 
     ! write(*,*) litlovec(179:181)
