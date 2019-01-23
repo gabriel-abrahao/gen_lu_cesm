@@ -6,10 +6,15 @@ program gen_potveg_CESM
   character*200 inputfolder,outputfolder,reffname,vegfname,outfname
   integer ncid
   integer status, varid
-  integer vegnlat,vegnlon,refnlat,refnlon,ntim,npft
-  real*8, ALLOCATABLE, DIMENSION(:,:) :: reflats,reflatn,reflonw,reflone,veglats,veglatn,veglonw,veglone
+  integer, TARGET :: vegnlat,vegnlon,refnlat,refnlon,ntim,npft
+  real*8, TARGET, ALLOCATABLE, DIMENSION(:,:) :: reflats,reflatn,reflonw,reflone,veglats,veglatn,veglonw,veglone
   real*8, ALLOCATABLE, DIMENSION(:,:,:) :: vegdata
-  !real*8, ALLOCATABLE, DIMENSION(:,:,:,:) :: vardata
+  real*8, ALLOCATABLE, DIMENSION(:,:,:) :: outdata
+
+  real*8, pointer :: inplats(:,:),inplatn(:,:),inplonw(:,:),inplone(:,:)
+  real*8, pointer :: outlats(:,:),outlatn(:,:),outlonw(:,:),outlone(:,:)
+  integer, pointer :: inpnlon,inpnlat
+  integer, pointer :: outnlon,outnlat
 
   inputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/input/"
   outputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/out_potveg/"
@@ -41,6 +46,26 @@ program gen_potveg_CESM
 
   ! call dum_write_2d("dummy.nc",veglone,vegnlat,vegnlon) ! Checking
   ! call dum_write_3d("dummy.nc",vegdata,vegnlat,vegnlon,npft) ! Checking
+
+  ! Use pointers to more generic names here (TODO: Refactor the code)
+  inpnlon => vegnlon
+  inpnlat => vegnlat
+
+  inplats => veglats
+  inplatn => veglatn
+  inplonw => veglonw
+  inplone => veglone
+
+  outnlon => refnlon
+  outnlat => refnlat
+
+  outlats => reflats
+  outlatn => reflatn
+  outlonw => reflonw
+  outlone => reflone
+
+
+
 
 
 end program gen_potveg_CESM
