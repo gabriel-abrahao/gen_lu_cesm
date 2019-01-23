@@ -67,9 +67,9 @@ program gen_potveg_CESM
   outlonw => reflonw
   outlone => reflone
 
-  write(*,*) "PASSEI"
-  poi = is_inside_vec(reflats(1,2),reflatn(1,2),veglats(1,1),veglatn(1,1))
-  write(*,*) poi
+  write(*,*) reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2)
+  write(*,*) is_inside_vec(reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2))
+  write(*,*) is_contained_vec(reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2))
 
 
 end program gen_potveg_CESM

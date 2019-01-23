@@ -268,8 +268,6 @@ contains
     real*8 biglo,bighi,litlo,lithi
     logical is_inside_vec
 
-    write(*,*) biglo,bighi,litlo,lithi
-
     if ( (litlo .ge. biglo .and. litlo .le. bighi) .or. (lithi .ge. biglo .and. lithi .le. bighi)) then
       is_inside_vec = .true.
     else
@@ -278,5 +276,24 @@ contains
 
     return
   end function is_inside_vec
+
+  function is_contained_vec(biglo,bighi,litlo,lithi)
+    real*8 biglo,bighi,litlo,lithi
+    logical is_contained_vec
+
+    if (.not.is_inside_vec(biglo,bighi,litlo,lithi)) then
+      is_contained_vec = .false.
+      return
+    else
+      if ( litlo .ge. biglo .and. lithi .le. bighi ) then
+        is_contained_vec = .true.
+      else
+        is_contained_vec = .false.
+      end if
+    end if
+
+    return
+  end function is_contained_vec
+
 
 end module
