@@ -58,7 +58,7 @@ contains
 
     return
   end subroutine get_ref_grid
-! Get the dimension sizes of a 2D file
+  ! Get the dimension sizes of a 2D file
   subroutine get_2d_dimsizes(fname,varname,nlat,nlon)
     use netcdf
     implicit none
@@ -82,7 +82,7 @@ contains
     return
   end subroutine get_2d_dimsizes
 
-! Get the 2D lat lon bounds of a 2D file, that has 2D centerpoint variables, assuming a regular grid
+  ! Get the 2D lat lon bounds of a 2D file, that has 2D centerpoint variables, assuming a regular grid
   subroutine get_veg_grid(fname,nlat,nlon,lats,latn,lonw,lone)
     use netcdf
     implicit none
@@ -121,137 +121,137 @@ contains
   end subroutine get_veg_grid
 
   ! Read the potential vegetation data (lon,lat,pft)
-    subroutine read_veg_data(fname,nlat,nlon,npft,data)
-      use netcdf
-      implicit none
-      character(*), INTENT(IN) :: fname
-      integer ncid
-      integer status, varid
-      integer nlat,nlon,npft
-      integer, dimension(nf90_max_var_dims) :: dimids ! To store the dimension ids
-      real*8, ALLOCATABLE, DIMENSION(:,:,:) :: data
+  subroutine read_veg_data(fname,nlat,nlon,npft,data)
+    use netcdf
+    implicit none
+    character(*), INTENT(IN) :: fname
+    integer ncid
+    integer status, varid
+    integer nlat,nlon,npft
+    integer, dimension(nf90_max_var_dims) :: dimids ! To store the dimension ids
+    real*8, ALLOCATABLE, DIMENSION(:,:,:) :: data
 
-      real*8 reslat,reslon ! The lat and lon resolutions of a regular grid
+    real*8 reslat,reslon ! The lat and lon resolutions of a regular grid
 
-      ALLOCATE(data(nlon,nlat,npft))
+    ALLOCATE(data(nlon,nlat,npft))
 
-      status = nf90_open(fname, NF90_NOWRITE, ncid)
+    status = nf90_open(fname, NF90_NOWRITE, ncid)
 
-      status = nf90_inq_varid(ncid,"PCT_PFT",varid)
-      status = nf90_get_var(ncid,varid,data)
+    status = nf90_inq_varid(ncid,"PCT_PFT",varid)
+    status = nf90_get_var(ncid,varid,data)
 
-      status = nf90_close(ncid)
+    status = nf90_close(ncid)
 
-      return
-    end subroutine read_veg_data
+    return
+  end subroutine read_veg_data
 
-    subroutine dum_write_3d(fname,data,nlat,nlon,npft)
-      use netcdf
-      implicit none
-      character(*), INTENT(IN) :: fname
-      integer ncid
-      integer status, varid
-      integer nlat,nlon,npft
-      integer i
-      integer, dimension(3) :: dimids ! To store the dimension ids
-      real*8, DIMENSION(:,:,:), INTENT(IN) :: data
+  subroutine dum_write_3d(fname,data,nlat,nlon,npft)
+    use netcdf
+    implicit none
+    character(*), INTENT(IN) :: fname
+    integer ncid
+    integer status, varid
+    integer nlat,nlon,npft
+    integer i
+    integer, dimension(3) :: dimids ! To store the dimension ids
+    real*8, DIMENSION(:,:,:), INTENT(IN) :: data
 
-      real*8 reslat,reslon ! The lat and lon resolutions of a regular grid
+    real*8 reslat,reslon ! The lat and lon resolutions of a regular grid
 
-      ncid = 987
+    ncid = 987
 
-      do i = 1,size(dimids)
-        dimids(i) = i
-      end do
-      varid = i+1
+    do i = 1,size(dimids)
+      dimids(i) = i
+    end do
+    varid = i+1
 
-      status = nf90_create(fname, NF90_CLOBBER, ncid)
+    status = nf90_create(fname, NF90_CLOBBER, ncid)
 
-      status = nf90_def_dim(ncid,"lon",nlon,dimids(1))
-      status = nf90_def_dim(ncid,"lat",nlat,dimids(2))
-      status = nf90_def_dim(ncid,"pft",npft,dimids(3))
-!write(*,*) dimids
-      status = nf90_def_var(ncid,"dummy",nf90_double,dimids(1:3),varid)
+    status = nf90_def_dim(ncid,"lon",nlon,dimids(1))
+    status = nf90_def_dim(ncid,"lat",nlat,dimids(2))
+    status = nf90_def_dim(ncid,"pft",npft,dimids(3))
+    !write(*,*) dimids
+    status = nf90_def_var(ncid,"dummy",nf90_double,dimids(1:3),varid)
 
-      status = nf90_enddef(ncid)
+    status = nf90_enddef(ncid)
 
-      status = nf90_put_var(ncid,varid,data,(/1,1,1/),(/nlon,nlat,npft/))
-      write(*,*) status
+    status = nf90_put_var(ncid,varid,data,(/1,1,1/),(/nlon,nlat,npft/))
+    write(*,*) status
 
-      ! status = nf90_inq_varid(ncid,"PCT_PFT",varid)
-      ! status = nf90_get_var(ncid,varid,data)
-      !
-      status = nf90_close(ncid)
+    ! status = nf90_inq_varid(ncid,"PCT_PFT",varid)
+    ! status = nf90_get_var(ncid,varid,data)
+    !
+    status = nf90_close(ncid)
 
-      return
-    end subroutine dum_write_3d
+    return
+  end subroutine dum_write_3d
 
-    subroutine dum_write_2d(fname,data,nlat,nlon)
-      use netcdf
-      implicit none
-      character(*), INTENT(IN) :: fname
-      integer ncid
-      integer status, varid
-      integer nlat,nlon,npft
-      integer i
-      integer, dimension(2) :: dimids ! To store the dimension ids
-      real*8, DIMENSION(:,:), INTENT(IN) :: data
+  subroutine dum_write_2d(fname,data,nlat,nlon)
+    use netcdf
+    implicit none
+    character(*), INTENT(IN) :: fname
+    integer ncid
+    integer status, varid
+    integer nlat,nlon,npft
+    integer i
+    integer, dimension(2) :: dimids ! To store the dimension ids
+    real*8, DIMENSION(:,:), INTENT(IN) :: data
 
-      real*8 reslat,reslon ! The lat and lon resolutions of a regular grid
+    real*8 reslat,reslon ! The lat and lon resolutions of a regular grid
 
-      ncid = 987
+    ncid = 987
 
-      do i = 1,size(dimids)
-        dimids(i) = i
-      end do
-      varid = i+1
+    do i = 1,size(dimids)
+      dimids(i) = i
+    end do
+    varid = i+1
 
-      status = nf90_create(fname, NF90_CLOBBER, ncid)
+    status = nf90_create(fname, NF90_CLOBBER, ncid)
 
-      status = nf90_def_dim(ncid,"lon",nlon,dimids(1))
-      status = nf90_def_dim(ncid,"lat",nlat,dimids(2))
-      !status = nf90_def_dim(ncid,"pft",npft,dimids(3))
-!write(*,*) dimids
-      status = nf90_def_var(ncid,"dummy",nf90_double,dimids,varid)
+    status = nf90_def_dim(ncid,"lon",nlon,dimids(1))
+    status = nf90_def_dim(ncid,"lat",nlat,dimids(2))
+    !status = nf90_def_dim(ncid,"pft",npft,dimids(3))
+    !write(*,*) dimids
+    status = nf90_def_var(ncid,"dummy",nf90_double,dimids,varid)
 
-      status = nf90_enddef(ncid)
+    status = nf90_enddef(ncid)
 
-      status = nf90_put_var(ncid,varid,data,(/1,1/),(/nlon,nlat/))
-      write(*,*) status
+    status = nf90_put_var(ncid,varid,data,(/1,1/),(/nlon,nlat/))
+    write(*,*) status
 
-      ! status = nf90_inq_varid(ncid,"PCT_PFT",varid)
-      ! status = nf90_get_var(ncid,varid,data)
-      !
-      status = nf90_close(ncid)
+    ! status = nf90_inq_varid(ncid,"PCT_PFT",varid)
+    ! status = nf90_get_var(ncid,varid,data)
+    !
+    status = nf90_close(ncid)
 
-      return
-    end subroutine dum_write_2d
+    return
+  end subroutine dum_write_2d
 
-    ! Flip the longitude variables and data (global 3D)
-      subroutine flip_lon_global_3d(data,nlat,nlon,npft,lats,latn,lonw,lone)
-        use netcdf
-        implicit none
-        integer nlat,nlon,npft
-        !real*8, ALLOCATABLE, DIMENSION(:,:) :: lats,latn,lonw,lone, dum2d
-        !real*8, ALLOCATABLE, DIMENSION(:,:,:) :: data,dum3d
-        real*8, DIMENSION(:,:) :: lats,latn,lonw,lone
-        real*8, DIMENSION(:,:,:) :: data
-        real*8, ALLOCATABLE, DIMENSION(:,:) :: dum2d
-        real*8, ALLOCATABLE, DIMENSION(:,:,:) :: dum3d
+  ! Flip the longitude variables and data (global 3D)
+  subroutine flip_lon_global_3d(data,nlat,nlon,npft,lats,latn,lonw,lone)
+    use netcdf
+    implicit none
+    integer nlat,nlon,npft
+    !real*8, ALLOCATABLE, DIMENSION(:,:) :: lats,latn,lonw,lone, dum2d
+    !real*8, ALLOCATABLE, DIMENSION(:,:,:) :: data,dum3d
+    real*8, DIMENSION(:,:) :: lats,latn,lonw,lone
+    real*8, DIMENSION(:,:,:) :: data
+    real*8, ALLOCATABLE, DIMENSION(:,:) :: dum2d
+    real*8, ALLOCATABLE, DIMENSION(:,:,:) :: dum3d
 
-        ALLOCATE(dum3d(nlon,nlat,npft))
-        ALLOCATE(dum2d(nlon,nlat))
+    ALLOCATE(dum3d(nlon,nlat,npft))
+    ALLOCATE(dum2d(nlon,nlat))
 
-        ! ALLOCATE(data(nlon,nlat,npft))
-        ! ALLOCATE(lats(nlon,nlat),latn(nlon,nlat),lonw(nlon,nlat),lone(nlon,nlat), dum2d(nlon,nlat))
+    ! ALLOCATE(data(nlon,nlat,npft))
+    ! ALLOCATE(lats(nlon,nlat),latn(nlon,nlat),lonw(nlon,nlat),lone(nlon,nlat), dum2d(nlon,nlat))
 
-        !call dum_write_3d("dummy.nc",data,nlat,nlon,npft)
-        !call dum_write_2d("dummy.nc",lonw,nlat,nlon)
-
-
+    !call dum_write_3d("dummy.nc",data,nlat,nlon,npft)
+    !call dum_write_2d("dummy.nc",lonw,nlat,nlon)
 
 
-        return
-      end subroutine flip_lon_global_3d
+
+
+    return
+  end subroutine flip_lon_global_3d
 
 end module
