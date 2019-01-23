@@ -1,6 +1,6 @@
 FC=gfortran
 #FCFLAGS=-I/usr/include/ -lFPL
-FCFLAGS=-I/usr/include/ -lnetcdf -lnetcdff
+FCFLAGS=-I/usr/include/ -lnetcdf -lnetcdff -ffree-line-length-none -ffixed-line-length-none
 
 build:
 	  $(FC) -c tools.F90 gen_potveg_CESM.F90 $(FCFLAGS)
