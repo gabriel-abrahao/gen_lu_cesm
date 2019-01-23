@@ -36,8 +36,11 @@ program gen_potveg_CESM
 ! Read the 3d (npft) potential vegetation file
   call read_veg_data(vegfname,vegnlat,vegnlon,npft,vegdata)
 
-  !call dum_write_3d("dummy.nc",vegdata,vegnlat,vegnlon,npft) ! Checking
-
+! Flip the longitude variables (TODO: This assumes a lot about the dataset as is, make it more generic)
   call flip_lon_global_3d(vegdata,vegnlat,vegnlon,npft,veglats,veglatn,veglonw,veglone)
+
+  ! call dum_write_2d("dummy.nc",veglone,vegnlat,vegnlon) ! Checking
+  ! call dum_write_3d("dummy.nc",vegdata,vegnlat,vegnlon,npft) ! Checking
+
 
 end program gen_potveg_CESM

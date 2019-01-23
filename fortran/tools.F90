@@ -232,25 +232,35 @@ contains
     use netcdf
     implicit none
     integer nlat,nlon,npft
-    !real*8, ALLOCATABLE, DIMENSION(:,:) :: lats,latn,lonw,lone, dum2d
-    !real*8, ALLOCATABLE, DIMENSION(:,:,:) :: data,dum3d
+    integer midl,midr ! Middle (left and right) longitude indices
     real*8, DIMENSION(:,:) :: lats,latn,lonw,lone
     real*8, DIMENSION(:,:,:) :: data
-    real*8, ALLOCATABLE, DIMENSION(:,:) :: dum2d
     real*8, ALLOCATABLE, DIMENSION(:,:,:) :: dum3d
+    real*8, ALLOCATABLE, DIMENSION(:,:) :: dum2d
 
-    ALLOCATE(dum3d(nlon,nlat,npft))
+    ! We'll allocate in turns to save memory
     ALLOCATE(dum2d(nlon,nlat))
 
-    ! ALLOCATE(data(nlon,nlat,npft))
-    ! ALLOCATE(lats(nlon,nlat),latn(nlon,nlat),lonw(nlon,nlat),lone(nlon,nlat), dum2d(nlon,nlat))
+    ! We are assuming a regular longitude grid here, with a nonodd number of points
+    midl = nlon/2
+    midr = midl+1
 
-    !call dum_write_3d("dummy.nc",data,nlat,nlon,npft)
-    !call dum_write_2d("dummy.nc",lonw,nlat,nlon)
+    dum2d(1:midl,:) = lonw(midr:nlon,:)
+    dum2d(midr:nlon,:) = lonw(1:midl,:) + 360.0d0
+    lonw = dum2d
 
+    dum2d(1:midl,:) = lone(midr:nlon,:)
+    dum2d(midr:nlon,:) = lone(1:midl,:) + 360.0d0
+    lone = dum2d
 
+    ! Deallocating 2D to save memory
+    deallocate(dum2d)
+    ALLOCATE(dum3d(nlon,nlat,npft))
 
-
+    dum3d(1:midl,:,:) = data(midr:nlon,:,:)
+    dum3d(midr:nlon,:,:) = data(1:midl,:,:)
+    data = dum3d
+    
     return
   end subroutine flip_lon_global_3d
 
