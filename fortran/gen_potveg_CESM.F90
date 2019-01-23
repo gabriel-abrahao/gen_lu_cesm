@@ -13,12 +13,14 @@ program gen_potveg_CESM
 
   real*8, pointer :: inplats(:,:),inplatn(:,:),inplonw(:,:),inplone(:,:)
   real*8, pointer :: outlats(:,:),outlatn(:,:),outlonw(:,:),outlone(:,:)
+  real*8, pointer :: vecinplats(:),vecinplatn(:),vecinplonw(:),vecinplone(:)
+  real*8, pointer :: vecoutlats(:),vecoutlatn(:),vecoutlonw(:),vecoutlone(:)
   integer, pointer :: inpnlon,inpnlat
   integer, pointer :: outnlon,outnlat
 
   integer outi,outj,i,j,k,ii,jj, lasti,lastj
 
-  integer bnds(2)
+  integer latbnds(2),lonbnds(2)
 
   inputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/input/"
   outputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/out_potveg/"
@@ -69,14 +71,29 @@ program gen_potveg_CESM
   outlonw => reflonw
   outlone => reflone
 
+  ! FIXME: For now, we'll simply assume the grid is regular
+  vecinplats => inplats(1,:)
+  vecinplatn => inplatn(1,:)
+  vecinplonw => inplonw(:,1)
+  vecinplone => inplone(:,1)
+
+  vecoutlats => outlats(1,:)
+  vecoutlatn => outlatn(1,:)
+  vecoutlonw => outlonw(:,1)
+  vecoutlone => outlone(:,1)
+
+
   ! Put output loop here
   outi = 191
   outj = 288
 
   ! write(*,*) outlats(outj,outi),outlatn(outj,outi)
-  !write(*,*) veglats(j,:),veglatn(j,:)
-  bnds = find_bound_inds_vec(outlats(outj,outi),outlatn(outj,outi),veglats(1,:),veglatn(1,:))
-  write(*,*) bnds
+  ! write(*,*) veglats(j,:),veglatn(j,:)
+  ! bnds = find_bound_inds_vec(outlats(outj,outi),outlatn(outj,outi),veglats(1,:),veglatn(1,:))
+  latbnds = find_bound_inds_vec(vecoutlats(outi),vecoutlatn(outi),vecinplats,vecinplatn)
+  lonbnds = find_bound_inds_vec(vecoutlonw(outj),vecoutlone(outj),vecinplonw,vecinplone)
+  write(*,*) latbnds
+  write(*,*) lonbnds
 
 
   ! write(*,*) reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2)
