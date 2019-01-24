@@ -297,6 +297,32 @@ contains
     return
   end subroutine flip_lon_global_3d
 
+  ! Flip the longitude variables and data (global 3D)
+  subroutine flip_lon_global_2d_nometa(data,nlat,nlon)
+    use netcdf
+    implicit none
+    integer nlat,nlon
+    integer midl,midr ! Middle (left and right) longitude indices
+    real*8, DIMENSION(:,:) :: data
+    real*8, ALLOCATABLE, DIMENSION(:,:) :: dum2d
+
+    ! We'll allocate in turns to save memory
+    ALLOCATE(dum2d(nlon,nlat))
+
+    ! We are assuming a regular longitude grid here, with a nonodd number of points
+    midl = nlon/2
+    midr = midl+1
+
+    dum2d(1:midl,:) = data(midr:nlon,:)
+    dum2d(midr:nlon,:) = data(1:midl,:)
+    data = dum2d
+
+    ! Deallocating 2D to save memory
+    deallocate(dum2d)
+
+    return
+  end subroutine flip_lon_global_2d_nometa
+
   ! Checks if a little interval is at least partially inside a big interval
   function is_inside_vec(biglo,bighi,litlo,lithi)
     real*8 biglo,bighi,litlo,lithi
@@ -424,5 +450,94 @@ contains
     find_bound_inds_vec = bnds
     return
   end function find_bound_inds_vec
+
+subroutine write_pft_data(fname,data,nlat,nlon,npft,lats,latn,lonw,lone)
+    use netcdf
+    implicit none
+    character(*), INTENT(IN) :: fname
+    integer ncid
+    integer status, varid
+    integer nlat,nlon,npft
+    real*8, ALLOCATABLE, DIMENSION(:) :: lat,lon
+    real*8, DIMENSION(:,:) :: lats,latn,lonw,lone
+    ! real*8, DIMENSION(:,:) :: mask
+    real*8, DIMENSION(:,:,:) :: data
+    integer i
+    integer, dimension(3) :: dimids,coordids ! To store the dimension ids
+    integer latsid,latnid,lonwid,loneid
+
+    real*8 reslat,reslon ! The lat and lon resolutions of a regular grid
+
+    ncid = 9876
+
+    ! Define ids explicitly
+    do i = 1,size(dimids)
+      dimids(i) = i
+    end do
+    do i = 1,size(coordids)
+      coordids(i) = i + dimids(size(dimids))
+    end do
+    varid = coordids(size(coordids))+1
+    latsid = varid + 1
+    latnid = latsid + 1
+    lonwid = latnid + 1
+    loneid = lonwid + 1
+
+    ! Get 1D versions of coordvars for ease of plotting later
+    allocate(lat(nlat),lon(nlon))
+    lat = (lats(1,:)+latn(1,:))/2.0d0
+    lon = (lonw(:,1)+lone(:,1))/2.0d0
+
+    !NF90_CLOBBER allows overwriting
+    status = nf90_create(fname, NF90_CLOBBER, ncid)
+
+    status = nf90_def_dim(ncid,"lon",nlon,dimids(1))
+    status = nf90_def_dim(ncid,"lat",nlat,dimids(2))
+    status = nf90_def_dim(ncid,"pft",npft,dimids(3))
+
+    status = nf90_def_var(ncid,"lon",nf90_double,dimids(1),coordids(1))
+    status = nf90_def_var(ncid,"lat",nf90_double,dimids(2),coordids(2))
+    status = nf90_put_att(ncid, coordids(1), "long_name", "lon")
+    status = nf90_put_att(ncid, coordids(1), "units", "degrees east")
+    status = nf90_put_att(ncid, coordids(2), "long_name", "lat")
+    status = nf90_put_att(ncid, coordids(2), "units", "degrees north")
+
+    !write(*,*) dimids
+    status = nf90_def_var(ncid,"PCT_PFT",nf90_double,dimids(1:3),varid)
+    status = nf90_put_att(ncid, varid, "long_name", "percent_pft")
+    status = nf90_put_att(ncid, varid, "units", "unitless")
+
+    status = nf90_def_var(ncid,"LATS",nf90_double,dimids(1:2),latsid)
+    status = nf90_def_var(ncid,"LATN",nf90_double,dimids(1:2),latnid)
+    status = nf90_def_var(ncid,"LONW",nf90_double,dimids(1:2),lonwid)
+    status = nf90_def_var(ncid,"LONE",nf90_double,dimids(1:2),loneid)
+    status = nf90_put_att(ncid, latsid, "long_name", "latitude of southern edge")
+    status = nf90_put_att(ncid, latnid, "long_name", "latitude of northern edge")
+    status = nf90_put_att(ncid, lonwid, "long_name", "longitude of western edge")
+    status = nf90_put_att(ncid, loneid, "long_name", "longitude of eastern edge")
+    status = nf90_put_att(ncid, latsid, "units", "degrees north")
+    status = nf90_put_att(ncid, latnid, "units", "degrees north")
+    status = nf90_put_att(ncid, lonwid, "units", "degrees east")
+    status = nf90_put_att(ncid, loneid, "units", "degrees east")
+
+    ! Exit define mode
+    status = nf90_enddef(ncid)
+
+    ! Put the variables
+    status = nf90_put_var(ncid,varid,data,(/1,1,1/),(/nlon,nlat,npft/))
+
+    status = nf90_put_var(ncid,latsid,lats,(/1,1/),(/nlon,nlat/))
+
+    ! Put coordinate variables
+    status = nf90_put_var(ncid,coordids(1),lon)
+    status = nf90_put_var(ncid,coordids(2),lat)
+
+
+
+    ! Close the file
+    status = nf90_close(ncid)
+
+    return
+end subroutine write_pft_data
 
 end module

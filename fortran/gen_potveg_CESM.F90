@@ -59,10 +59,12 @@ program gen_potveg_CESM
 
 ! Flip the longitude variables (TODO: This assumes a lot about the dataset as is, make it more generic)
   call flip_lon_global_3d(vegdata,vegnlat,vegnlon,npft,veglats,veglatn,veglonw,veglone)
+  call flip_lon_global_2d_nometa(vegmask,vegnlat,vegnlon)
+
 
   ! call dum_write_2d("dummy.nc",veglone,vegnlat,vegnlon) ! Checking
   ! call dum_write_3d("dummy.nc",vegdata,vegnlat,vegnlon,npft) ! Checking
-  ! call dum_write_2d("dummy.nc",vegmask,vegnlat,vegnlon) ! Checking
+  call dum_write_2d("dummy.nc",vegmask,vegnlat,vegnlon) ! Checking
 
   ! Use pointers to more generic names here (TODO: Refactor the code)
   inpnlon => vegnlon
@@ -183,7 +185,9 @@ program gen_potveg_CESM
 
   !TODO: CORRECT FRACTIONS TO 100% USING LANDFRAC_PFT and PFTDATA_MASK
 
-  call dum_write_3d("dummy.nc",outdata,outnlat,outnlon,npft) ! Checking
+
+  ! Write dataset
+  call write_pft_data(outfname,outdata,outnlat,outnlon,npft,outlats,outlatn,outlonw,outlone) ! Checking
 
 
   ! write(*,*) reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2)
