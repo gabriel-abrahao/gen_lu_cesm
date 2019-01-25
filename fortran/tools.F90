@@ -3,6 +3,7 @@ contains
 
   ! Count the lines in a text file
   function count_lines(fname)
+    implicit none
     character(*), INTENT(IN) ::fname
     integer count_lines
     integer status
@@ -14,6 +15,15 @@ contains
     end do
     close(999)
   end function count_lines
+
+  subroutine read_codes(fname,codes,classes,ncod)
+    implicit none
+    character(*), INTENT(IN) ::fname
+    integer ncod
+    INTEGER, ALLOCATABLE, DIMENSION(:) :: codes
+    CHARACTER*200, ALLOCATABLE, DIMENSION(:) :: classes
+    
+  end subroutine read_codes
 
   ! Get the dimension sizes of the 4D reference variable
   subroutine get_ref_dimzises(fname,varname,nlat,nlon,ntim,npft)
