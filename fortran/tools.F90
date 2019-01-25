@@ -1,6 +1,20 @@
 module tools
 contains
 
+  ! Count the lines in a text file
+  function count_lines(fname)
+    character(*), INTENT(IN) ::fname
+    integer count_lines
+    integer status
+    open(999,file = fname)
+    count_lines = -1
+    do while (status.eq.0)
+      count_lines = count_lines+1
+      read(999,*,iostat = status)
+    end do
+    close(999)
+  end function count_lines
+
   ! Get the dimension sizes of the 4D reference variable
   subroutine get_ref_dimzises(fname,varname,nlat,nlon,ntim,npft)
     use netcdf

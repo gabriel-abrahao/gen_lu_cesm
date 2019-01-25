@@ -3,10 +3,12 @@ program remap_rochedo
   use netcdf
   use tools
   implicit none
-  character*200 inputfolder,outputfolder,reffname,inpfname,outfname,outfpref
+  character*200 rootfolder,inputfolder,outputfolder,reffname,inpfname,codfname,outfname,outfpref
   integer ncid
   integer status, varid
-  integer, TARGET :: vegnlat,vegnlon,refnlat,refnlon,ntim,npft
+  integer, TARGET :: vegnlat,vegnlon,refnlat,refnlon,ntim,ncod
+  integer,ALLOCATABLE, DIMENSION(:) :: codes
+  character*200,ALLOCATABLE, DIMENSION(:) :: classes
   real*8, TARGET, ALLOCATABLE, DIMENSION(:,:) :: reflats,reflatn,reflonw,reflone,veglats,veglatn,veglonw,veglone
   real*8, ALLOCATABLE, DIMENSION(:,:) :: vegmask
   real*8, ALLOCATABLE, DIMENSION(:,:,:) :: vegdata
@@ -26,16 +28,21 @@ program remap_rochedo
   real*8 latsize,lonsize,latwgt,lonwgt,wgt,totwgt
   real*8, ALLOCATABLE, dimension(:) ::  outval ! The output value of a pixel in every PFT
 
-  inputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/input/"
-  outputfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/out_rochedo/"
+  rootfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/"
+
+  inputfolder = trim(ADJUSTL(rootfolder))//"input/"
+  outputfolder = trim(ADJUSTL(rootfolder))//"out_rochedo/"
 
   ! reffname = trim(ADJUSTL(inputfolder))//"surfdata.pftdyn_0.9x1.25_simyr1850-2005_c091008.nc"
   reffname = trim(ADJUSTL(inputfolder))//"min_surfdata.nc"
   inpfname = trim(ADJUSTL(inputfolder))//"weg_comp_2013-2050.nc"
+  codfname = trim(ADJUSTL(rootfolder))//"codes_rochedo.csv"
 
   outfpref = trim(ADJUSTL(outputfolder))//"weg_remap_"
 
-  write(*,*) inpfname
+  ncod = count_lines(codfname)
+
+  write(*,*) ncod
 !
 ! ! Get the sizes of the 4D reference file
 !   call get_ref_dimzises(reffname,"PCT_PFT",refnlat,refnlon,ntim,npft)
