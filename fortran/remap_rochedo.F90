@@ -22,8 +22,9 @@ program remap_rochedo
   integer, pointer :: outnlon,outnlat
 
   real*8, ALLOCATABLE,DIMENSION(:) :: vecinplats(:),vecinplatn(:),vecinplonw(:),vecinplone(:)
+  real*8, ALLOCATABLE,DIMENSION(:) :: years
 
-  integer outi,outj,i,j,k,ii,jj, lasti,lastj
+  integer outi,outj,i,j,k,ii,jj, lasti,lastj, timestep
 
   integer latbnds(2),lonbnds(2)
 
@@ -60,21 +61,23 @@ program remap_rochedo
 ! Get the sizes of the input landuse flie
   call get_3d_dimsizes(inpfname,"landuse",inpnlat,inpnlon,ntim)
   write(*,*) inpnlon,inpnlat,ntim
+! Get the years in the time dimension
+  call get_landuse_years(inpfname,years,ntim)
+
 !
 ! Get the lat lon 2D bounds, assuming a regular grid
   call get_landuse_grid(inpfname,inpnlat,inpnlon,vecinplats,vecinplatn,vecinplonw,vecinplone)
 ! Flip the longitude variable, assuming its not crossing Greenwich
   call flip_lon_nocross_vec(inpnlon,vecinplonw,vecinplone)
 
+  timestep = 1
+  call read_landuse_data_timestep(inpfname,inpdata,inpnlat,inpnlon,timestep)
+
 !
 ! ! Read the 3d (npft) potential vegetation file and its associated land mask
 !   call read_veg_data(vegfname,vegnlat,vegnlon,npft,vegdata)
 !   call read_veg_mask(vegfname,vegnlat,vegnlon,vegmask)
 !
-!
-! ! Flip the longitude variables (TODO: This assumes a lot about the dataset as is, make it more generic)
-!   call flip_lon_global_3d(vegdata,vegnlat,vegnlon,npft,veglats,veglatn,veglonw,veglone)
-!   call flip_lon_global_2d_nometa(vegmask,vegnlat,vegnlon)
 !
 !
 !   ! call dum_write_2d("dummy.nc",veglone,vegnlat,vegnlon) ! Checking

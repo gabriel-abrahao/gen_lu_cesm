@@ -221,6 +221,57 @@ contains
     return
   end subroutine get_landuse_grid
 
+  subroutine get_landuse_years(fname,years,ntim)
+    use netcdf
+    implicit none
+    character(*), INTENT(IN) :: fname
+    integer ncid
+    integer status, varid
+    integer nlat,nlon,ntim,npft
+    integer, dimension(nf90_max_var_dims) :: dimids ! To store the dimension ids
+    real*8, ALLOCATABLE, DIMENSION(:) :: years
+
+    INTEGER i
+
+    allocate(years(ntim))
+
+    ncid = 999
+    status = nf90_open(fname, NF90_NOWRITE, ncid)
+
+    status = nf90_inq_varid(ncid,"time",varid)
+    status = nf90_get_var(ncid,varid,years)
+
+    write(*,*) years
+
+    status = nf90_close(ncid)
+    return
+  end subroutine get_landuse_years
+
+  ! Read the potential vegetation data (lon,lat,pft)
+  subroutine read_landuse_data_timestep(fname,data,nlat,nlon,timestep)
+    use netcdf
+    implicit none
+    character(*), INTENT(IN) :: fname
+    integer ncid
+    integer status, varid
+    integer nlat,nlon,npft,ntim,timestep
+    integer, dimension(nf90_max_var_dims) :: dimids ! To store the dimension ids
+    real*8, ALLOCATABLE, DIMENSION(:,:) :: data
+
+    real*8 reslat,reslon ! The lat and lon resolutions of a regular grid
+
+    ALLOCATE(data(nlon,nlat))
+
+    status = nf90_open(fname, NF90_NOWRITE, ncid)
+
+    status = nf90_inq_varid(ncid,"landuse",varid)
+    status = nf90_get_var(ncid,varid,data,(/1,1,timestep/),(/nlon,nlat,1/))
+
+    status = nf90_close(ncid)
+
+    return
+  end subroutine read_landuse_data_timestep
+
   ! Read the potential vegetation data (lon,lat,pft)
   subroutine read_veg_data(fname,nlat,nlon,npft,data)
     use netcdf
