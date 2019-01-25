@@ -64,7 +64,7 @@ program gen_potveg_CESM
 
   ! call dum_write_2d("dummy.nc",veglone,vegnlat,vegnlon) ! Checking
   ! call dum_write_3d("dummy.nc",vegdata,vegnlat,vegnlon,npft) ! Checking
-  call dum_write_2d("dummy.nc",vegmask,vegnlat,vegnlon) ! Checking
+  ! call dum_write_2d("dummy.nc",vegmask,vegnlat,vegnlon) ! Checking
 
   ! Use pointers to more generic names here (TODO: Refactor the code)
   inpnlon => vegnlon
@@ -186,7 +186,7 @@ program gen_potveg_CESM
   !TODO: CORRECT FRACTIONS TO 100% USING LANDFRAC_PFT and PFTDATA_MASK
 
 
-  ! Write dataset
+  ! Write dataset. The division by zero (wgt=0 when mask=0) leads to missing values in the output
   call write_pft_data(outfname,outdata,outnlat,outnlon,npft,outlats,outlatn,outlonw,outlone) ! Checking
 
 
