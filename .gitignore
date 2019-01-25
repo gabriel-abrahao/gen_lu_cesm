@@ -1,5 +1,6 @@
 input/
 out_potveg/
+out_rochedo/
 *.o
 *.exe
 *.mod

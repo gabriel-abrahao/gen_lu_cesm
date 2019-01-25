@@ -4,5 +4,7 @@ FCFLAGS=-I/usr/include/ -lnetcdf -lnetcdff -ffree-line-length-none -ffixed-line-
 
 build:
 	  $(FC) -c tools.F90 gen_potveg_CESM.F90 $(FCFLAGS)
+		$(FC) -c remap_rochedo.F90 $(FCFLAGS)
 		$(FC) -o gen_potveg_CESM.exe tools.o gen_potveg_CESM.o $(FCFLAGS)
+		$(FC) -o remap_rochedo.exe tools.o remap_rochedo.o $(FCFLAGS)
 		#$(FC) -c -o gen_potveg_CESM.exe gen_potveg_CESM.F90 $(FCFLAGS)
