@@ -123,18 +123,18 @@ program remap_rochedo
   ! Put output loop here
   ! outi = 67
   ! outj = 232
-    do outi = 80,80
-      do outj = 244,244
+    ! do outi = 80,80
+    !   do outj = 244,244
       ! do outi = 1,1
       !   do outj = 1,1
 
-!   do outi = 1,outnlat
-    ! write(*,*) "Running latitude ",outi," of ",outnlat
-!     do outj = 1,outnlon
-!
-      write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< outi,outj >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-      write(*,*) outi,outj
-      write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+  do outi = 1,outnlat
+    write(*,*) "Running latitude ",outi," of ",outnlat
+    do outj = 1,outnlon
+
+      ! write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< outi,outj >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+      ! write(*,*) outi,outj
+      ! write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
       ! Out of bounds, continue the loop
       if (vecoutlats(outi).ge.vecinplatn(inpnlat) .or. vecoutlatn(outi).le.vecinplats(1) .or. vecoutlonw(outj).ge.vecinplone(inpnlon) .or. vecoutlone(outj).le.vecinplonw(1)) then
         cycle
@@ -143,12 +143,12 @@ program remap_rochedo
 
       latbnds = find_bound_inds_vec(vecoutlats(outi),vecoutlatn(outi),vecinplats,vecinplatn)
       lonbnds = find_bound_inds_vec(vecoutlonw(outj),vecoutlone(outj),vecinplonw,vecinplone)
-      write(*,*) "latbnds = ",latbnds
-      write(*,*) "lonbnds = ",lonbnds
-
-      write(*,*) "======================== vecout =========================="
-      write(*,*) vecoutlats(outi),vecoutlatn(outi),vecoutlonw(outj),vecoutlone(outj)
-      write(*,*) "=========================================================="
+      ! write(*,*) "latbnds = ",latbnds
+      ! write(*,*) "lonbnds = ",lonbnds
+      !
+      ! write(*,*) "======================== vecout =========================="
+      ! write(*,*) vecoutlats(outi),vecoutlatn(outi),vecoutlonw(outj),vecoutlone(outj)
+      ! write(*,*) "=========================================================="
 
       outval(:) = 0.0d0
       totwgt = 0.0d0
@@ -195,17 +195,17 @@ program remap_rochedo
             end if
           end do !k, cods
 
-          write(*,*) i,j,wgt,inpdata(j,i)
+          ! write(*,*) i,j,wgt,inpdata(j,i)
 
         end do ! j, lonbnds
       end do !i, latbnds
 
-      do k = 1,ncod
-          write(*,*) codes(k),outval(k),100.0d0*outval(k)/totwgt
-      end do
+      ! do k = 1,ncod
+      !     write(*,*) codes(k),outval(k),100.0d0*outval(k)/totwgt
+      ! end do
 
       ! Now divide by the weights
-      outval = outval/totwgt
+      outval = 100.0d0*outval/totwgt
 
       ! Write to the variable
       outdata(outj,outi,:) = outval(:)
@@ -213,6 +213,8 @@ program remap_rochedo
     end do !outj, outnlat
   end do !outi, outnlon
 !
+
+call dum_write_3d("dummy.nc",outdata,outnlat,outnlon,ncod)
 
   ! Write dataset. The division by zero (wgt=0 when mask=0) leads to missing values in the output
   ! call write_pft_data(outfname,outdata,outnlat,outnlon,npft,outlats,outlatn,outlonw,outlone) ! Checking
