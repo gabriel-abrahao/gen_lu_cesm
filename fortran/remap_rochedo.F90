@@ -6,20 +6,22 @@ program remap_rochedo
   character*200 rootfolder,inputfolder,outputfolder,reffname,inpfname,codfname,outfname,outfpref
   integer ncid
   integer status, varid
-  integer, TARGET :: vegnlat,vegnlon,refnlat,refnlon,ntim,ncod
+  integer, TARGET :: inpnlat,inpnlon,refnlat,refnlon,ntim,npft,ncod
   integer,ALLOCATABLE, DIMENSION(:) :: codes
   character*200,ALLOCATABLE, DIMENSION(:) :: classes
   real*8, TARGET, ALLOCATABLE, DIMENSION(:,:) :: reflats,reflatn,reflonw,reflone,veglats,veglatn,veglonw,veglone
-  real*8, ALLOCATABLE, DIMENSION(:,:) :: vegmask
+
   real*8, ALLOCATABLE, DIMENSION(:,:,:) :: vegdata
   real*8, ALLOCATABLE, DIMENSION(:,:,:) :: outdata
 
+  real*8, ALLOCATABLE, DIMENSION(:,:) :: inpdata
+
   real*8, pointer :: inplats(:,:),inplatn(:,:),inplonw(:,:),inplone(:,:)
   real*8, pointer :: outlats(:,:),outlatn(:,:),outlonw(:,:),outlone(:,:)
-  real*8, pointer :: vecinplats(:),vecinplatn(:),vecinplonw(:),vecinplone(:)
   real*8, pointer :: vecoutlats(:),vecoutlatn(:),vecoutlonw(:),vecoutlone(:)
-  integer, pointer :: inpnlon,inpnlat
   integer, pointer :: outnlon,outnlat
+
+  real*8, ALLOCATABLE,DIMENSION(:) :: vecinplats(:),vecinplatn(:),vecinplonw(:),vecinplone(:)
 
   integer outi,outj,i,j,k,ii,jj, lasti,lastj
 
@@ -35,31 +37,35 @@ program remap_rochedo
 
   ! reffname = trim(ADJUSTL(inputfolder))//"surfdata.pftdyn_0.9x1.25_simyr1850-2005_c091008.nc"
   reffname = trim(ADJUSTL(inputfolder))//"min_surfdata.nc"
-  inpfname = trim(ADJUSTL(inputfolder))//"weg_comp_2013-2050.nc"
+  inpfname = trim(ADJUSTL(inputfolder))//"weg_comp_2013_2015.nc"
   codfname = trim(ADJUSTL(rootfolder))//"codes_rochedo.csv"
 
   outfpref = trim(ADJUSTL(outputfolder))//"weg_remap_"
 
+  ! Read the codes from the file
   ncod = count_lines(codfname)
+  call read_codes(codfname,codes,classes,ncod)
 
-  write(*,*) ncod
+
+  ! Get the sizes of the 4D reference file
+  call get_ref_dimzises(reffname,"PCT_PFT",refnlat,refnlon,ntim,npft)
+  write(*,*) refnlon,refnlat,npft,ntim
+
+  ! Allocate the output variable
+  allocate(outdata(refnlon,refnlat,ncod))
+
+  ! Get the lat lon 2D bounds from the reference file
+  call get_ref_grid(reffname,refnlat,refnlon,reflats,reflatn,reflonw,reflone)
+
+! Get the sizes of the input landuse flie
+  call get_3d_dimsizes(inpfname,"landuse",inpnlat,inpnlon,ntim)
+  write(*,*) inpnlon,inpnlat,ntim
 !
-! ! Get the sizes of the 4D reference file
-!   call get_ref_dimzises(reffname,"PCT_PFT",refnlat,refnlon,ntim,npft)
-!   write(*,*) refnlon,refnlat,npft,ntim
-!
-!   ! Allocate the output variable
-!   allocate(outdata(refnlon,refnlat,npft))
-!
-! ! Get the lat lon 2D bounds from the reference file
-!   call get_ref_grid(reffname,refnlat,refnlon,reflats,reflatn,reflonw,reflone)
-!
-! ! Get the sizes of the potveg flie
-!   call get_2d_dimsizes(vegfname,"PCT_PFT",vegnlat,vegnlon)
-!   write(*,*) vegnlon,vegnlat
-!
-! ! Get the lat lon 2D bounds, assuming a regular grid
-!   call get_veg_grid(vegfname,vegnlat,vegnlon,veglats,veglatn,veglonw,veglone)
+! Get the lat lon 2D bounds, assuming a regular grid
+  call get_landuse_grid(inpfname,inpnlat,inpnlon,vecinplats,vecinplatn,vecinplonw,vecinplone)
+! Flip the longitude variable, assuming its not crossing Greenwich
+  call flip_lon_nocross_vec(inpnlon,vecinplonw,vecinplone)
+
 !
 ! ! Read the 3d (npft) potential vegetation file and its associated land mask
 !   call read_veg_data(vegfname,vegnlat,vegnlon,npft,vegdata)

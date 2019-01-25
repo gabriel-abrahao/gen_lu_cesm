@@ -14,6 +14,7 @@ contains
       read(999,*,iostat = status)
     end do
     close(999)
+    return
   end function count_lines
 
   subroutine read_codes(fname,codes,classes,ncod)
@@ -22,7 +23,18 @@ contains
     integer ncod
     INTEGER, ALLOCATABLE, DIMENSION(:) :: codes
     CHARACTER*200, ALLOCATABLE, DIMENSION(:) :: classes
-    
+    integer i
+
+    allocate(codes(ncod),classes(ncod))
+
+    open(999,file = fname)
+
+    do i = 1,ncod
+      read(999,*) codes(i),classes(i)
+    end do
+
+    close(999)
+    return
   end subroutine read_codes
 
   ! Get the dimension sizes of the 4D reference variable
@@ -106,6 +118,31 @@ contains
     return
   end subroutine get_2d_dimsizes
 
+  ! Get the dimension sizes of a 3D file
+  subroutine get_3d_dimsizes(fname,varname,nlat,nlon,ntim)
+    use netcdf
+    implicit none
+    character(*), INTENT(IN) :: fname,varname
+    integer ncid
+    integer status, varid
+    integer nlat,nlon,ntim
+    integer, dimension(nf90_max_var_dims) :: dimids ! To store the dimension ids
+
+    status = nf90_open(trim(ADJUSTL(fname)), NF90_NOWRITE, ncid)
+
+    status = nf90_inq_varid(ncid,trim(ADJUSTL(varname)),varid)
+
+    status = nf90_inquire_variable(ncid,varid,dimids = dimids)
+
+    status = nf90_inquire_dimension(ncid,dimids(1),len = nlon)
+    status = nf90_inquire_dimension(ncid,dimids(2),len = nlat)
+    status = nf90_inquire_dimension(ncid,dimids(3),len = ntim)
+
+    status = nf90_close(ncid)
+
+    return
+  end subroutine get_3d_dimsizes
+
   ! Get the 2D lat lon bounds of a 2D file, that has 2D centerpoint variables, assuming a regular grid
   subroutine get_veg_grid(fname,nlat,nlon,lats,latn,lonw,lone)
     use netcdf
@@ -143,6 +180,46 @@ contains
 
     return
   end subroutine get_veg_grid
+
+  ! Get the 2D lat lon bounds of a 2D file, that has 2D centerpoint variables, assuming a regular grid
+  subroutine get_landuse_grid(fname,nlat,nlon,lats,latn,lonw,lone)
+    use netcdf
+    implicit none
+    character(*), INTENT(IN) :: fname
+    integer ncid
+    integer status, varid
+    integer nlat,nlon,ntim,npft
+    integer, dimension(nf90_max_var_dims) :: dimids ! To store the dimension ids
+    real*8, ALLOCATABLE, DIMENSION(:) :: latc,lonc,lats,latn,lonw,lone
+
+    INTEGER i
+    real*8 reslat,reslon ! The lat and lon resolutions of a regular grid
+
+    ALLOCATE(lats(nlat),latn(nlat),lonw(nlon),lone(nlon))
+    ALLOCATE(latc(nlat),lonc(nlon))
+
+    ncid = 999
+    status = nf90_open(fname, NF90_NOWRITE, ncid)
+
+    status = nf90_inq_varid(ncid,"lat",varid)
+    status = nf90_get_var(ncid,varid,latc)
+
+    status = nf90_inq_varid(ncid,"lon",varid)
+    status = nf90_get_var(ncid,varid,lonc)
+
+    status = nf90_close(ncid)
+
+    ! Assuming a regular grid
+    reslon = lonc(2) - lonc(1)
+    reslat = latc(2) - latc(1)
+
+    lonw = lonc - (reslon/2.0d0)
+    lone = lonc + (reslon/2.0d0)
+    lats = latc - (reslat/2.0d0)
+    latn = latc + (reslat/2.0d0)
+
+    return
+  end subroutine get_landuse_grid
 
   ! Read the potential vegetation data (lon,lat,pft)
   subroutine read_veg_data(fname,nlat,nlon,npft,data)
@@ -321,7 +398,21 @@ contains
     return
   end subroutine flip_lon_global_3d
 
-  ! Flip the longitude variables and data (global 3D)
+  ! Flip the longitude variable (vecto longitude, NO CROSSING GREENWICH!!)
+  subroutine flip_lon_nocross_vec(nlon,lonw,lone)
+    use netcdf
+    implicit none
+    integer nlat,nlon,npft
+    integer midl,midr ! Middle (left and right) longitude indices
+    real*8, DIMENSION(:) :: lonw,lone
+
+    lonw = lonw + 360.0d0
+    lone = lone + 360.0d0
+
+    return
+  end subroutine flip_lon_nocross_vec
+
+  ! Flip the longitude variables and data (global 2D)
   subroutine flip_lon_global_2d_nometa(data,nlat,nlon)
     use netcdf
     implicit none
