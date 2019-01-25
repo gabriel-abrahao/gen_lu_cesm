@@ -256,7 +256,8 @@ contains
     integer status, varid
     integer nlat,nlon,npft,ntim,timestep
     integer, dimension(nf90_max_var_dims) :: dimids ! To store the dimension ids
-    real*8, ALLOCATABLE, DIMENSION(:,:) :: data
+    ! real*8, ALLOCATABLE, DIMENSION(:,:) :: data
+    integer, ALLOCATABLE, DIMENSION(:,:) :: data
 
     real*8 reslat,reslon ! The lat and lon resolutions of a regular grid
 
