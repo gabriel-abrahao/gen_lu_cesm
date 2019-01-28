@@ -37,6 +37,24 @@ contains
     return
   end subroutine read_codes
 
+  function ispan(start,end,stride)
+    implicit none
+    integer start,end,stride,n,i,count
+    INTEGER, ALLOCATABLE,DIMENSION(:) :: ispan
+
+    n = CEILING(real(end-start+1)/real(stride))
+
+    allocate(ispan(n))
+
+    count = 0
+    do i = start,end,stride
+      count = count + 1
+      ispan(count) = i
+    end do
+
+    return
+  end function ispan
+
   ! Get the dimension sizes of the 4D reference variable
   subroutine get_ref_dimzises(fname,varname,nlat,nlon,ntim,npft)
     use netcdf
