@@ -284,7 +284,9 @@ contains
 
     real*8 reslat,reslon ! The lat and lon resolutions of a regular grid
 
-    ALLOCATE(data(nlon,nlat))
+    if (.not.ALLOCATED(data)) then
+      ALLOCATE(data(nlon,nlat))
+    end if
 
     status = nf90_open(fname, NF90_NOWRITE, ncid)
 

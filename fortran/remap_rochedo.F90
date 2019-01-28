@@ -4,15 +4,17 @@ program remap_rochedo
   use tools
   implicit none
   character*200 rootfolder,inputfolder,outputfolder,reffname,inpfname,codfname,outfname,outfpref
+  character*200 dumchar
   integer ncid
   integer status, varid
-  integer, TARGET :: inpnlat,inpnlon,refnlat,refnlon,ntim,npft,ncod
+  integer, TARGET :: inpnlat,inpnlon,refnlat,refnlon,ntim,npft,ncod,refntim
   integer,ALLOCATABLE, DIMENSION(:) :: codes
   character*200,ALLOCATABLE, DIMENSION(:) :: classes
   real*8, TARGET, ALLOCATABLE, DIMENSION(:,:) :: reflats,reflatn,reflonw,reflone,veglats,veglatn,veglonw,veglone
 
   real*8, ALLOCATABLE, DIMENSION(:,:,:) :: vegdata
   real*8, ALLOCATABLE, DIMENSION(:,:,:) :: outdata
+  real*8, ALLOCATABLE, DIMENSION(:,:,:,:) :: fulloutdata
 
   ! real*8, ALLOCATABLE, DIMENSION(:,:) :: inpdata
   integer, ALLOCATABLE, DIMENSION(:,:) :: inpdata
@@ -26,6 +28,8 @@ program remap_rochedo
 
   real*8, ALLOCATABLE,DIMENSION(:) :: vecinplats(:),vecinplatn(:),vecinplonw(:),vecinplone(:)
   real*8, ALLOCATABLE,DIMENSION(:) :: years
+  integer, ALLOCATABLE,DIMENSION(:) :: intyears
+  integer syear
 
   integer outi,outj,i,j,k,ii,jj, lasti,lastj, timestep
 
@@ -43,178 +47,166 @@ program remap_rochedo
   reffname = trim(ADJUSTL(inputfolder))//"min_surfdata.nc"
   inpfname = trim(ADJUSTL(inputfolder))//"weg_comp_2013_2015.nc"
   codfname = trim(ADJUSTL(rootfolder))//"codes_rochedo.csv"
+  syear = 2013
 
   outfpref = trim(ADJUSTL(outputfolder))//"weg_remap_"
 
   ! Read the codes from the file
   ncod = count_lines(codfname)
+  write(*,*) ncod
   call read_codes(codfname,codes,classes,ncod)
 
 
   ! Get the sizes of the 4D reference file
-  call get_ref_dimzises(reffname,"PCT_PFT",outnlat,outnlon,ntim,npft)
-  write(*,*) outnlon,outnlat,npft,ntim
+  call get_ref_dimzises(reffname,"PCT_PFT",outnlat,outnlon,refntim,npft)
+  ! write(*,*) outnlon,outnlat,npft,ntim
 
-  ! Allocate the output variable
-  allocate(outdata(outnlon,outnlat,ncod))
 
   ! Get the lat lon 2D bounds from the reference file
   call get_ref_grid(reffname,outnlat,outnlon,outlats,outlatn,outlonw,outlone)
 
-! Get the sizes of the input landuse flie
+  ! Get the sizes of the input landuse flie
   call get_3d_dimsizes(inpfname,"landuse",inpnlat,inpnlon,ntim)
   write(*,*) inpnlon,inpnlat,ntim
-! Get the years in the time dimension
+  ! Get the years in the time dimension, but use syear to define integer years
   call get_landuse_years(inpfname,years,ntim)
+  intyears = ispan(syear,syear+ntim-1,1)
+  write(*,*) intyears
 
-!
-! Get the lat lon 2D bounds, assuming a regular grid
+  write(*,*) ncod
+  ! Allocate the output variables
+  allocate(outdata(outnlon,outnlat,ncod))
+  allocate(fulloutdata(outnlon,outnlat,ncod,ntim))
+  write(*,*) ncod
+  ! write(*,*) shape(outdata)
+  write(*,*) shape(fulloutdata)
+  !
+  ! Get the lat lon 2D bounds, assuming a regular grid
   call get_landuse_grid(inpfname,inpnlat,inpnlon,vecinplats,vecinplatn,vecinplonw,vecinplone)
-! Flip the longitude variable, assuming its not crossing Greenwich
+  ! Flip the longitude variable, assuming its not crossing Greenwich
   call flip_lon_nocross_vec(inpnlon,vecinplonw,vecinplone)
 
-
-! TODO: PUT TIME LOOP HERE!!!!
-  timestep = 1
-  ! Read a single year of data
-  write(*,*) ">>>>>>>>>>>>>>> Reading timestep ",timestep
-  call read_landuse_data_timestep(inpfname,inpdata,inpnlat,inpnlon,timestep)
-  write(*,*) ">>>>>>>>>>>>>>> Finished reading timestep ",timestep
-
-! call dum_write_2d("dummy.nc",outlats,outnlat,outnlon)
-
-!   ! Use pointers to more generic names here (TODO: Refactor the code)
-!   inpnlon => vegnlon
-!   inpnlat => vegnlat
-!
-!   inplats => veglats
-!   inplatn => veglatn
-!   inplonw => veglonw
-!   inplone => veglone
-!
-!   outnlon => refnlon
-!   outnlat => refnlat
-!
-!   outlats => reflats
-!   outlatn => reflatn
-!   outlonw => reflonw
-!   outlone => reflone
-!
-!   ! FIXME: For now, we'll simply assume the grid is regular
-!   vecinplats => inplats(1,:)
-!   vecinplatn => inplatn(1,:)
-!   vecinplonw => inplonw(:,1)
-!   vecinplone => inplone(:,1)
-!
-  vecoutlats => outlats(1,:)
-  vecoutlatn => outlatn(1,:)
-  vecoutlonw => outlonw(:,1)
-  vecoutlone => outlone(:,1)
-
-  ! Preallocate outdata with zeros
-  outdata(:,:,:) = 0.0d0
-
-  ! Allocate outval and fill it with zeros
-  allocate(outval(ncod))
-  outval(:) = 0.0d0
+  write(*,*) shape(fulloutdata)
 
 
+  do timestep = 1,ntim
+    ! Read a single year of data
+    write(*,*) ">>>>>>>>>>>>>>> Reading timestep ",timestep
+    call read_landuse_data_timestep(inpfname,inpdata,inpnlat,inpnlon,timestep)
+    write(*,*) ">>>>>>>>>>>>>>> Finished reading timestep ",timestep
 
-  ! Put output loop here
-  ! outi = 67
-  ! outj = 232
-    ! do outi = 80,80
-    !   do outj = 244,244
-      ! do outi = 1,1
-      !   do outj = 1,1
+    vecoutlats => outlats(1,:)
+    vecoutlatn => outlatn(1,:)
+    vecoutlonw => outlonw(:,1)
+    vecoutlone => outlone(:,1)
 
-  do outi = 1,outnlat
-    write(*,*) "Running latitude ",outi," of ",outnlat
-    do outj = 1,outnlon
+    ! Preallocate outdata with zeros
+    outdata(:,:,:) = 0.0d0
 
-      ! write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< outi,outj >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-      ! write(*,*) outi,outj
-      ! write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-      ! Out of bounds, continue the loop
-      if (vecoutlats(outi).ge.vecinplatn(inpnlat) .or. vecoutlatn(outi).le.vecinplats(1) .or. vecoutlonw(outj).ge.vecinplone(inpnlon) .or. vecoutlone(outj).le.vecinplonw(1)) then
-        cycle
-      end if
+    ! Allocate outval and fill it with zeros
+    if (.not.ALLOCATED(outval)) then
+      allocate(outval(ncod))
+    end if
+    outval(:) = 0.0d0
+
+    do outi = 1,outnlat
+      ! write(*,*) "Running latitude ",outi," of ",outnlat
+      write(*,'(a,a,1i10,a,1i10)',advance="no") char(13),"Running latitude ",outi," of ",outnlat
+      do outj = 1,outnlon
+
+        ! write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< outi,outj >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        ! write(*,*) outi,outj
+        ! write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        ! Out of bounds, continue the loop
+        if (vecoutlats(outi).ge.vecinplatn(inpnlat) .or. vecoutlatn(outi).le.vecinplats(1) .or. vecoutlonw(outj).ge.vecinplone(inpnlon) .or. vecoutlone(outj).le.vecinplonw(1)) then
+          cycle
+        end if
 
 
-      latbnds = find_bound_inds_vec(vecoutlats(outi),vecoutlatn(outi),vecinplats,vecinplatn)
-      lonbnds = find_bound_inds_vec(vecoutlonw(outj),vecoutlone(outj),vecinplonw,vecinplone)
-      ! write(*,*) "latbnds = ",latbnds
-      ! write(*,*) "lonbnds = ",lonbnds
-      !
-      ! write(*,*) "======================== vecout =========================="
-      ! write(*,*) vecoutlats(outi),vecoutlatn(outi),vecoutlonw(outj),vecoutlone(outj)
-      ! write(*,*) "=========================================================="
+        latbnds = find_bound_inds_vec(vecoutlats(outi),vecoutlatn(outi),vecinplats,vecinplatn)
+        lonbnds = find_bound_inds_vec(vecoutlonw(outj),vecoutlone(outj),vecinplonw,vecinplone)
+        ! write(*,*) "latbnds = ",latbnds
+        ! write(*,*) "lonbnds = ",lonbnds
+        !
+        ! write(*,*) "======================== vecout =========================="
+        ! write(*,*) vecoutlats(outi),vecoutlatn(outi),vecoutlonw(outj),vecoutlone(outj)
+        ! write(*,*) "=========================================================="
 
-      outval(:) = 0.0d0
-      totwgt = 0.0d0
-      do i = latbnds(1),latbnds(2)
-        do j = lonbnds(1),lonbnds(2)
+        outval(:) = 0.0d0
+        totwgt = 0.0d0
+        do i = latbnds(1),latbnds(2)
+          do j = lonbnds(1),lonbnds(2)
 
-          ! Calculate lat weight for that pixel
-          if (is_contained_vec(vecoutlats(outi),vecoutlatn(outi),vecinplats(i),vecinplatn(i))) then
-            latwgt = 1.0d0
-          else
-
-            latsize = vecinplatn(i)-vecinplats(i)
-            if (vecinplatn(i) .ge. vecoutlats(outi) .and. vecinplatn(i) .le. vecoutlatn(outi)) then
-              latwgt = (vecinplatn(i)-vecoutlats(outi))/latsize
+            ! Calculate lat weight for that pixel
+            if (is_contained_vec(vecoutlats(outi),vecoutlatn(outi),vecinplats(i),vecinplatn(i))) then
+              latwgt = 1.0d0
             else
-              latwgt = (vecoutlatn(outi) - vecinplats(i))/latsize
+
+              latsize = vecinplatn(i)-vecinplats(i)
+              if (vecinplatn(i) .ge. vecoutlats(outi) .and. vecinplatn(i) .le. vecoutlatn(outi)) then
+                latwgt = (vecinplatn(i)-vecoutlats(outi))/latsize
+              else
+                latwgt = (vecoutlatn(outi) - vecinplats(i))/latsize
+              end if
             end if
-          end if
 
-          ! Calculate lon weight for that pixel
-          if (is_contained_vec(vecoutlonw(outj),vecoutlone(outj),vecinplonw(j),vecinplone(j))) then
+            ! Calculate lon weight for that pixel
+            if (is_contained_vec(vecoutlonw(outj),vecoutlone(outj),vecinplonw(j),vecinplone(j))) then
 
-            lonwgt = 1.0d0
-          else
-            lonsize = vecinplone(j)-vecinplonw(j)
-            if (vecinplone(j) .ge. vecoutlonw(outj) .and. vecinplone(j) .le. vecoutlone(outj)) then
-              lonwgt = (vecinplone(j)-vecoutlonw(outj))/lonsize
+              lonwgt = 1.0d0
             else
-              lonwgt = (vecoutlone(outj) - vecinplonw(j))/lonsize
+              lonsize = vecinplone(j)-vecinplonw(j)
+              if (vecinplone(j) .ge. vecoutlonw(outj) .and. vecinplone(j) .le. vecoutlone(outj)) then
+                lonwgt = (vecinplone(j)-vecoutlonw(outj))/lonsize
+              else
+                lonwgt = (vecoutlone(outj) - vecinplonw(j))/lonsize
+              end if
             end if
-          end if
 
-          wgt = lonwgt*latwgt
+            wgt = lonwgt*latwgt
 
-          ! ! Check if it's inside the mask
-          ! ! if (vegmask(j,i).ne.1) wgt = 0.0d0
-          !
-          totwgt = totwgt + wgt
+            ! ! Check if it's inside the mask
+            ! ! if (vegmask(j,i).ne.1) wgt = 0.0d0
+            !
+            totwgt = totwgt + wgt
 
-          ! Accumulate val*wgt in outval
-          do k = 1,ncod
-            if (inpdata(j,i).eq.codes(k)) then
-              outval(k) = outval(k) + wgt
-            end if
-          end do !k, cods
+            ! Accumulate val*wgt in outval
+            do k = 1,ncod
+              if (inpdata(j,i).eq.codes(k)) then
+                outval(k) = outval(k) + wgt
+              end if
+            end do !k, cods
 
-          ! write(*,*) i,j,wgt,inpdata(j,i)
+            ! write(*,*) i,j,wgt,inpdata(j,i)
 
-        end do ! j, lonbnds
-      end do !i, latbnds
+          end do ! j, lonbnds
+        end do !i, latbnds
 
-      ! do k = 1,ncod
-      !     write(*,*) codes(k),outval(k),100.0d0*outval(k)/totwgt
-      ! end do
+        ! do k = 1,ncod
+        !     write(*,*) codes(k),outval(k),100.0d0*outval(k)/totwgt
+        ! end do
 
-      ! Now divide by the weights
-      outval = 100.0d0*outval/totwgt
+        ! Now divide by the weights
+        outval = 100.0d0*outval/totwgt
 
-      ! Write to the variable
-      outdata(outj,outi,:) = outval(:)
+        ! Write to the variable
+        outdata(outj,outi,:) = outval(:)
 
-    end do !outj, outnlat
-  end do !outi, outnlon
-!
+      end do !outj, outnlat
+    end do !outi, outnlon
 
-call dum_write_3d("dummy.nc",outdata,outnlat,outnlon,ncod)
+    fulloutdata(:,:,:,timestep) = outdata
+    !
+  end do !timestep, ntim
+
+
+
+
+  write(*,*) outnlat,outnlon,ncod,ntim
+  write(*,*) ncod
+  ! call dum_write_3d("dummy.nc",outdata,outnlat,outnlon,ncod)
+  call write_rochedo_data("teste.nc",fulloutdata,outnlat,outnlon,ncod,ntim,outlats,outlatn,outlonw,outlone)
+
 
   ! Write dataset. The division by zero (wgt=0 when mask=0) leads to missing values in the output
   ! call write_pft_data(outfname,outdata,outnlat,outnlon,npft,outlats,outlatn,outlonw,outlone) ! Checking
