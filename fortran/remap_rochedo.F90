@@ -30,6 +30,7 @@ program remap_rochedo
   real*8, ALLOCATABLE,DIMENSION(:) :: years
   integer, ALLOCATABLE,DIMENSION(:) :: intyears
   integer syear
+  integer misscod,missind
 
   integer outi,outj,i,j,k,ii,jj, lasti,lastj, timestep
 
@@ -47,7 +48,9 @@ program remap_rochedo
   reffname = trim(ADJUSTL(inputfolder))//"min_surfdata.nc"
   inpfname = trim(ADJUSTL(inputfolder))//"weg_comp_2013_2015.nc"
   codfname = trim(ADJUSTL(rootfolder))//"codes_rochedo.csv"
-  syear = 2013
+
+  misscod = 0 ! Code that refers to missing cells in Rochedo
+  syear = 2013 ! Used to recreate the time coordvar
 
   outfpref = trim(ADJUSTL(outputfolder))//"weg_remap_"
 
@@ -55,7 +58,7 @@ program remap_rochedo
   ncod = count_lines(codfname)
   write(*,*) ncod
   call read_codes(codfname,codes,classes,ncod)
-
+  missind = minloc(abs(codes-misscod),misscod) ! COD index of the missing value
 
   ! Get the sizes of the 4D reference file
   call get_ref_dimzises(reffname,"PCT_PFT",outnlat,outnlon,refntim,npft)
@@ -67,11 +70,15 @@ program remap_rochedo
 
   ! Get the sizes of the input landuse flie
   call get_3d_dimsizes(inpfname,"landuse",inpnlat,inpnlon,ntim)
+
   write(*,*) inpnlon,inpnlat,ntim
+
   ! Get the years in the time dimension, but use syear to define integer years
   call get_landuse_years(inpfname,years,ntim)
   intyears = ispan(syear,syear+ntim-1,1)
+
   write(*,*) intyears
+
 
   write(*,*) ncod
   ! Allocate the output variables
@@ -79,6 +86,7 @@ program remap_rochedo
   allocate(fulloutdata(outnlon,outnlat,ncod,ntim))
   write(*,*) ncod
   ! write(*,*) shape(outdata)
+
   write(*,*) shape(fulloutdata)
   !
   ! Get the lat lon 2D bounds, assuming a regular grid
@@ -117,8 +125,10 @@ program remap_rochedo
         ! write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< outi,outj >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         ! write(*,*) outi,outj
         ! write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        ! Out of bounds, continue the loop
+        ! Out of bounds, continue the loop and give 100% to the missing value cod
         if (vecoutlats(outi).ge.vecinplatn(inpnlat) .or. vecoutlatn(outi).le.vecinplats(1) .or. vecoutlonw(outj).ge.vecinplone(inpnlon) .or. vecoutlone(outj).le.vecinplonw(1)) then
+          outdata(outj,outi,:) = 0.0d0
+          outdata(outj,outi,missind) = 100.0d0
           cycle
         end if
 
