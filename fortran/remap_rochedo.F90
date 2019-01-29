@@ -4,12 +4,13 @@ program remap_rochedo
   use tools
   implicit none
   character*200 rootfolder,inputfolder,outputfolder,reffname,inpfname,codfname,outfname
-  character*200 dumchar
+  character*1000 dumchar
   integer ncid
   integer status, varid
   integer, TARGET :: inpnlat,inpnlon,refnlat,refnlon,ntim,npft,ncod,refntim
   integer,ALLOCATABLE, DIMENSION(:) :: codes
   character*200,ALLOCATABLE, DIMENSION(:) :: classes
+
   real*8, TARGET, ALLOCATABLE, DIMENSION(:,:) :: reflats,reflatn,reflonw,reflone,veglats,veglatn,veglonw,veglone
 
   real*8, ALLOCATABLE, DIMENSION(:,:,:) :: vegdata
@@ -78,6 +79,10 @@ program remap_rochedo
   call read_codes(codfname,codes,classes,ncod)
   missind = minloc(abs(codes-misscod),misscod) ! COD index of the missing value
 
+  dumchar = format_classes(codes,classes)
+  ! write(*,*) dumchar
+  stop
+
   ! Get the sizes of the 4D reference file
   call get_ref_dimzises(reffname,"PCT_PFT",outnlat,outnlon,refntim,npft)
   ! write(*,*) outnlon,outnlat,npft,ntim
@@ -139,7 +144,7 @@ program remap_rochedo
       ! write(*,*) "Running latitude ",outi," of ",outnlat
       write(*,'(a,a,1i10,a,1i10)',advance="no") char(13),"Running latitude ",outi," of ",outnlat
       do outj = 1,outnlon
-
+exit
         ! write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< outi,outj >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         ! write(*,*) outi,outj
         ! write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -227,7 +232,7 @@ program remap_rochedo
     !
   end do !timestep, ntim
 
-  call write_rochedo_data(outfname,fulloutdata,outnlat,outnlon,ncod,ntim,outlats,outlatn,outlonw,outlone)
+  call write_rochedo_data(outfname,fulloutdata,outnlat,outnlon,ncod,ntim,outlats,outlatn,outlonw,outlone,intyears,codes,classes)
 
 
 

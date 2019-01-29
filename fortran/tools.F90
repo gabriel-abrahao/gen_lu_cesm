@@ -753,13 +753,15 @@ subroutine write_pft_data(fname,data,nlat,nlon,npft,lats,latn,lonw,lone)
     return
 end subroutine write_pft_data
 
-subroutine write_rochedo_data(fname,data,nlat,nlon,ncod,ntim,lats,latn,lonw,lone)
+subroutine write_rochedo_data(fname,data,nlat,nlon,ncod,ntim,lats,latn,lonw,lone,intyears,codes,classes)
     use netcdf
     implicit none
     character(*), INTENT(IN) :: fname
     integer ncid
     integer status, varid
     integer nlat,nlon,ncod,ntim
+    integer,dimension(:) :: intyears, codes
+    character(*), DIMENSION(:) :: classes
     real*8, ALLOCATABLE, DIMENSION(:) :: lat,lon
     real*8, DIMENSION(:,:) :: lats,latn,lonw,lone
     ! real*8, DIMENSION(:,:) :: mask
@@ -795,7 +797,7 @@ subroutine write_rochedo_data(fname,data,nlat,nlon,ncod,ntim,lats,latn,lonw,lone
 
     status = nf90_def_dim(ncid,"lon",nlon,dimids(1))
     status = nf90_def_dim(ncid,"lat",nlat,dimids(2))
-    status = nf90_def_dim(ncid,"pft",ncod,dimids(3))
+    status = nf90_def_dim(ncid,"cod",ncod,dimids(3))
     status = nf90_def_dim(ncid,"time",ntim,dimids(4))
 
     status = nf90_def_var(ncid,"lon",nf90_double,dimids(1),coordids(1))
@@ -804,6 +806,13 @@ subroutine write_rochedo_data(fname,data,nlat,nlon,ncod,ntim,lats,latn,lonw,lone
     status = nf90_put_att(ncid, coordids(1), "units", "degrees east")
     status = nf90_put_att(ncid, coordids(2), "long_name", "lat")
     status = nf90_put_att(ncid, coordids(2), "units", "degrees north")
+
+    status = nf90_def_var(ncid,"cod",nf90_int,dimids(3),coordids(3))
+    status = nf90_put_att(ncid, coordids(3), "long_name", "Class codes from the Rochedo dataset")
+    ! status = nf90_put_att(ncid, coordids(3), "classes", classes)
+
+    status = nf90_def_var(ncid,"time",nf90_int,dimids(4),coordids(4))
+    status = nf90_put_att(ncid, coordids(4), "long_name", "Year")
 
     !write(*,*) dimids
     status = nf90_def_var(ncid,"PCT_PFT",nf90_double,dimids(1:4),varid)
@@ -823,6 +832,8 @@ subroutine write_rochedo_data(fname,data,nlat,nlon,ncod,ntim,lats,latn,lonw,lone
     status = nf90_put_att(ncid, lonwid, "units", "degrees east")
     status = nf90_put_att(ncid, loneid, "units", "degrees east")
 
+
+
     ! Exit define mode
     status = nf90_enddef(ncid)
 
@@ -840,6 +851,8 @@ subroutine write_rochedo_data(fname,data,nlat,nlon,ncod,ntim,lats,latn,lonw,lone
     ! Put coordinate variables
     status = nf90_put_var(ncid,coordids(1),lon)
     status = nf90_put_var(ncid,coordids(2),lat)
+    status = nf90_put_var(ncid,coordids(3),codes)
+    status = nf90_put_var(ncid,coordids(4),intyears)
 
 
 
@@ -848,5 +861,28 @@ subroutine write_rochedo_data(fname,data,nlat,nlon,ncod,ntim,lats,latn,lonw,lone
 
     return
 end subroutine write_rochedo_data
+
+function format_classes(codes,classes)
+  implicit none
+  integer, DIMENSION(:) :: codes
+  character(*), DIMENSION(:) :: classes
+  character(len=:), ALLOCATABLE :: format_classes,dumchar
+  ! character*1000 :: format_classes
+  integer i,n,maxlen,inplen,outlen
+
+  n = size(codes)
+  inplen = len(classes(1))
+  maxlen = n*inplen
+  allocate(character(maxlen) :: format_classes)
+  allocate(character(inplen) :: dumchar)
+  ! allocate(character(size(codes)*len(classes(1))) :: format_classes)
+  i = 1
+  write(dumchar,*) codes(i),'  : "',trim(ADJUSTL(classes(i))),'"'
+  ! format_classes = trim(ADJUSTL(format_classes))//NEW_LINE(format_classes)//trim(ADJUSTL(dumchar))
+  ! write(format_classes,*) NEW_LINE(format_classes)
+  ! write(*,*) trim(ADJUSTL(format_classes))
+  ! write(*,*) trim(ADJUSTL(dumchar))
+
+end function format_classes
 
 end module
