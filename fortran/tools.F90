@@ -1,6 +1,16 @@
 module tools
 contains
 
+  subroutine catch_nf90_open(status)
+    integer status
+    if (status.ne.0) then
+      write(*,*) "ERROR in nf90_open"
+      write(*,*) "status = ",status
+      stop
+    end if
+    return
+  end subroutine
+
   ! Count the lines in a text file
   function count_lines(fname)
     implicit none
@@ -71,6 +81,7 @@ contains
     integer, dimension(nf90_max_var_dims) :: dimids ! To store the dimension ids
 
     status = nf90_open(trim(ADJUSTL(fname)), NF90_NOWRITE, ncid)
+    call catch_nf90_open(status)
 
     status = nf90_inq_varid(ncid,trim(ADJUSTL(varname)),varid)
 
@@ -100,6 +111,7 @@ contains
     ALLOCATE(lats(nlon,nlat),latn(nlon,nlat),lonw(nlon,nlat),lone(nlon,nlat))
 
     status = nf90_open(fname, NF90_NOWRITE, ncid)
+    call catch_nf90_open(status)
 
     status = nf90_inq_varid(ncid,"LATS",varid)
     status = nf90_get_var(ncid,varid,lats)
@@ -128,6 +140,7 @@ contains
     integer, dimension(nf90_max_var_dims) :: dimids ! To store the dimension ids
 
     status = nf90_open(trim(ADJUSTL(fname)), NF90_NOWRITE, ncid)
+    call catch_nf90_open(status)
 
     status = nf90_inq_varid(ncid,trim(ADJUSTL(varname)),varid)
 
@@ -152,8 +165,10 @@ contains
     integer, dimension(nf90_max_var_dims) :: dimids ! To store the dimension ids
 
     status = nf90_open(trim(ADJUSTL(fname)), NF90_NOWRITE, ncid)
+    call catch_nf90_open(status)
 
     status = nf90_inq_varid(ncid,trim(ADJUSTL(varname)),varid)
+
 
     status = nf90_inquire_variable(ncid,varid,dimids = dimids)
 
@@ -183,6 +198,7 @@ contains
     ALLOCATE(latixy(nlon,nlat),longxy(nlon,nlat))
 
     status = nf90_open(fname, NF90_NOWRITE, ncid)
+    call catch_nf90_open(status)
 
     status = nf90_inq_varid(ncid,"LATIXY",varid)
     status = nf90_get_var(ncid,varid,latixy)
@@ -223,6 +239,7 @@ contains
 
     ncid = 999
     status = nf90_open(fname, NF90_NOWRITE, ncid)
+    call catch_nf90_open(status)
 
     status = nf90_inq_varid(ncid,"lat",varid)
     status = nf90_get_var(ncid,varid,latc)
@@ -260,6 +277,7 @@ contains
 
     ncid = 999
     status = nf90_open(fname, NF90_NOWRITE, ncid)
+    call catch_nf90_open(status)
 
     status = nf90_inq_varid(ncid,"time",varid)
     status = nf90_get_var(ncid,varid,years)
@@ -289,6 +307,7 @@ contains
     end if
 
     status = nf90_open(fname, NF90_NOWRITE, ncid)
+    call catch_nf90_open(status)
 
     status = nf90_inq_varid(ncid,"landuse",varid)
     status = nf90_get_var(ncid,varid,data,(/1,1,timestep/),(/nlon,nlat,1/))
@@ -314,6 +333,7 @@ contains
     ALLOCATE(data(nlon,nlat,npft))
 
     status = nf90_open(fname, NF90_NOWRITE, ncid)
+    call catch_nf90_open(status)
 
     status = nf90_inq_varid(ncid,"PCT_PFT",varid)
     status = nf90_get_var(ncid,varid,data)
@@ -336,6 +356,7 @@ contains
     ALLOCATE(data(nlon,nlat))
 
     status = nf90_open(fname, NF90_NOWRITE, ncid)
+    call catch_nf90_open(status)
 
     status = nf90_inq_varid(ncid,"LANDMASK",varid)
     status = nf90_get_var(ncid,varid,data)
