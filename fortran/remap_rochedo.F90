@@ -3,7 +3,7 @@ program remap_rochedo
   use netcdf
   use tools
   implicit none
-  character*200 rootfolder,inputfolder,outputfolder,reffname,inpfname,codfname,outfname,outfpref
+  character*200 rootfolder,inputfolder,outputfolder,reffname,inpfname,codfname,outfname
   character*200 dumchar
   integer ncid
   integer status, varid
@@ -39,20 +39,38 @@ program remap_rochedo
   real*8 latsize,lonsize,latwgt,lonwgt,wgt,totwgt
   real*8, ALLOCATABLE, dimension(:) ::  outval ! The output value of a pixel in every PFT
 
-  rootfolder = "/home/gabriel/transicao/doutorado/gen_lu_cesm/"
+  rootfolder = "../"
 
-  inputfolder = trim(ADJUSTL(rootfolder))//"input/"
-  outputfolder = trim(ADJUSTL(rootfolder))//"out_rochedo/"
+  ! Folders relative to rootfolder
+  inputfolder = "input/"
+  outputfolder = "out_rochedo/"
 
-  ! reffname = trim(ADJUSTL(inputfolder))//"surfdata.pftdyn_0.9x1.25_simyr1850-2005_c091008.nc"
-  reffname = trim(ADJUSTL(inputfolder))//"min_surfdata.nc"
-  inpfname = trim(ADJUSTL(inputfolder))//"weg_comp_2013_2015.nc"
+  ! Input file names (relative to input folder)
+  reffname = "min_surfdata.nc"
+  inpfname = "weg_comp_2013_2015.nc"
+
   codfname = trim(ADJUSTL(rootfolder))//"codes_rochedo.csv"
 
   misscod = 0 ! Code that refers to missing cells in Rochedo
   syear = 2013 ! Used to recreate the time coordvar
 
-  outfpref = trim(ADJUSTL(outputfolder))//"weg_remap_"
+  outfname = "fraction_"//trim(ADJUSTL(inpfname))
+! ################################ END OF INPUTS ###############################
+
+  ! Resolving full paths
+  inputfolder = trim(ADJUSTL(rootfolder))//inputfolder
+  outputfolder = trim(ADJUSTL(rootfolder))//outputfolder
+  reffname = trim(ADJUSTL(inputfolder))//reffname
+  inpfname = trim(ADJUSTL(inputfolder))//inpfname
+  outfname = trim(ADJUSTL(outputfolder))//outfname
+
+  write(*,*) "rootfolder  : ", trim(ADJUSTL(rootfolder))
+  write(*,*) "inputfolder  : ", trim(ADJUSTL(inputfolder))
+  write(*,*) "outputfolder  : ", trim(ADJUSTL(outputfolder))
+  write(*,*) "reffname  : ", trim(ADJUSTL(reffname))
+  write(*,*) "inpfname  : ", trim(ADJUSTL(inpfname))
+  write(*,*) "outfname  : ", trim(ADJUSTL(outfname))
+
 
   ! Read the codes from the file
   ncod = count_lines(codfname)
@@ -209,22 +227,8 @@ program remap_rochedo
     !
   end do !timestep, ntim
 
+  call write_rochedo_data(outfname,fulloutdata,outnlat,outnlon,ncod,ntim,outlats,outlatn,outlonw,outlone)
 
-
-
-  write(*,*) outnlat,outnlon,ncod,ntim
-  write(*,*) ncod
-  ! call dum_write_3d("dummy.nc",outdata,outnlat,outnlon,ncod)
-  call write_rochedo_data("teste.nc",fulloutdata,outnlat,outnlon,ncod,ntim,outlats,outlatn,outlonw,outlone)
-
-
-  ! Write dataset. The division by zero (wgt=0 when mask=0) leads to missing values in the output
-  ! call write_pft_data(outfname,outdata,outnlat,outnlon,npft,outlats,outlatn,outlonw,outlone) ! Checking
-
-
-  ! write(*,*) reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2)
-  ! write(*,*) is_inside_vec(reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2))
-  ! write(*,*) is_contained_vec(reflats(1,2),reflatn(1,2),veglats(1,2),veglatn(1,2))
 
 
 end program remap_rochedo
