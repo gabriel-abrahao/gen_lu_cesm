@@ -140,7 +140,7 @@ program remap_rochedo
       ! write(*,*) "Running latitude ",outi," of ",outnlat
       write(*,'(a,a,1i10,a,1i10)',advance="no") char(13),"Running latitude ",outi," of ",outnlat
       do outj = 1,outnlon
-exit
+
         ! write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< outi,outj >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         ! write(*,*) outi,outj
         ! write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
