@@ -34,6 +34,8 @@ program remap_rochedo
   integer misscod,missind
 
   integer outi,outj,i,j,k,ii,jj, lasti,lastj, timestep
+  character*200 envnthreads
+  integer nthreads
 
   integer latbnds(2),lonbnds(2)
 
@@ -72,6 +74,15 @@ program remap_rochedo
   write(*,*) "inpfname  : ", trim(ADJUSTL(inpfname))
   write(*,*) "outfname  : ", trim(ADJUSTL(outfname))
 
+  ! Check if OMP_NUM_THREADS is set. If it's not, run single-threaded
+  call getenv("OMP_NUM_THREADS",envnthreads)
+  write(*,*) "OMP_NUM_THREADS is: ",envnthreads
+  nthreads = 1
+  if (trim(envnthreads).ne."") then
+    read(envnthreads,*) nthreads
+  end if
+  write(*,*) "Running with nthreads = ", nthreads
+  call omp_set_num_threads(nthreads)
 
   ! Read the codes from the file
   ncod = count_lines(codfname)
