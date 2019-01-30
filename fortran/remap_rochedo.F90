@@ -139,7 +139,8 @@ program remap_rochedo
     do outi = 1,outnlat
       ! write(*,*) "Running latitude ",outi," of ",outnlat
       write(*,'(a,a,1i10,a,1i10)',advance="no") char(13),"Running latitude ",outi," of ",outnlat
-      !$OMP PARALLEL DO
+      !!!$OMP PARALLEL DO DEFAULT(PRIVATE) SHARED(inpdata,outdata)
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(outj,i,j,latbnds,lonbnds,outval,totwgt,wgt,latwgt,lonwgt,latsize,lonsize)
       do outj = 1,outnlon
 
         ! write(*,*) "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< outi,outj >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
