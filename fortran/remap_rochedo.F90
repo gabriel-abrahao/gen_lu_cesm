@@ -79,10 +79,6 @@ program remap_rochedo
   call read_codes(codfname,codes,classes,ncod)
   missind = minloc(abs(codes-misscod),misscod) ! COD index of the missing value
 
-  dumchar = format_classes(codes,classes)
-  ! write(*,*) dumchar
-  stop
-
   ! Get the sizes of the 4D reference file
   call get_ref_dimzises(reffname,"PCT_PFT",outnlat,outnlon,refntim,npft)
   ! write(*,*) outnlon,outnlat,npft,ntim

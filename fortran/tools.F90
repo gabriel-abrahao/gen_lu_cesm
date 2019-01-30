@@ -809,7 +809,7 @@ subroutine write_rochedo_data(fname,data,nlat,nlon,ncod,ntim,lats,latn,lonw,lone
 
     status = nf90_def_var(ncid,"cod",nf90_int,dimids(3),coordids(3))
     status = nf90_put_att(ncid, coordids(3), "long_name", "Class codes from the Rochedo dataset")
-    ! status = nf90_put_att(ncid, coordids(3), "classes", classes)
+    status = nf90_put_att(ncid, coordids(3), "classes", format_classes(codes,classes))
 
     status = nf90_def_var(ncid,"time",nf90_int,dimids(4),coordids(4))
     status = nf90_put_att(ncid, coordids(4), "long_name", "Year")
@@ -875,14 +875,17 @@ function format_classes(codes,classes)
   maxlen = n*inplen
   allocate(character(maxlen) :: format_classes)
   allocate(character(inplen) :: dumchar)
+  format_classes = " "
   ! allocate(character(size(codes)*len(classes(1))) :: format_classes)
-  i = 1
-  write(dumchar,*) codes(i),'  : "',trim(ADJUSTL(classes(i))),'"'
-  ! format_classes = trim(ADJUSTL(format_classes))//NEW_LINE(format_classes)//trim(ADJUSTL(dumchar))
+  ! i = 1
+  do i = 1,n
+    write(dumchar,*) codes(i),'  : "',trim(ADJUSTL(classes(i))),'"'
+    format_classes = trim(ADJUSTL(format_classes))//NEW_LINE(format_classes)//trim(ADJUSTL(dumchar))
+  end do
   ! write(format_classes,*) NEW_LINE(format_classes)
   ! write(*,*) trim(ADJUSTL(format_classes))
   ! write(*,*) trim(ADJUSTL(dumchar))
-
+  return
 end function format_classes
 
 end module
