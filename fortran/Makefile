@@ -1,7 +1,7 @@
 FC=gfortran
 #FCFLAGS=-I/usr/include/ -lFPL
 # WARNING: Check if the optimization flag is not affecting results!!
-FCFLAGS=-I/usr/include/ -lnetcdf -lnetcdff -ffree-line-length-none -ffixed-line-length-none -O3
+FCFLAGS=-I/usr/include/ -lnetcdf -lnetcdff -fopenmp -ffree-line-length-none -ffixed-line-length-none -O3
 
 all: tools gen_potveg remap_rochedo
 
