@@ -50,12 +50,13 @@ program remap_rochedo
 
   ! Input file names (relative to input folder)
   reffname = "min_surfdata.nc"
-  inpfname = "weg_comp_2013_2015.nc"
+  ! inpfname = "weg_comp_2013_2015.nc"
+  inpfname = "seg_comp_2012-2050.nc"
 
   codfname = trim(ADJUSTL(rootfolder))//"codes_rochedo.csv"
 
   misscod = 0 ! Code that refers to missing cells in Rochedo
-  syear = 2013 ! Used to recreate the time coordvar
+  syear = 2012 ! Used to recreate the time coordvar
 
   outfname = "fraction_"//trim(ADJUSTL(inpfname))
 ! ################################ END OF INPUTS ###############################
