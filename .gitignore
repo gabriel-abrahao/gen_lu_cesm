@@ -1,6 +1,7 @@
 input/*
 out_potveg/*
 out_rochedo/*
+out_surfdata/*
 *.o
 *.exe
 *.mod
