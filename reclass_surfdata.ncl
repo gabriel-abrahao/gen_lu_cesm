@@ -78,7 +78,22 @@ end do
 ; 2: Separate in macroclasses 0: Primary veg. 1: Planted forest 2: Crop 3: Pasture
 ;Since we don't have information on secondary vegetation, all but the planted forests will be considered primary
 roc_macro = new((/4, dimsroc(1), dimsroc(2)/), typeof(roc_norm))
-; roc_macro(0,:,:) = dim_sum_n_Wrap(roc_norm({},:,:),0)
+copy_VarCoords_exl(roc_norm,roc_macro)
+roc_macro!0 = "cod"
+roc_macro&cod = ispan(0,3,1)
+
+; Primary are only savanas, savanas_em_AP, florestas, florestas_em_AP. And class_9, that is all zero anyway
+roc_macro(0,:,:) = (/ dim_sum_n(roc_norm({5:9},:,:),0) /)
+; Planted forest is only planted forests (30)
+roc_macro(1,:,:) = (/ roc_norm({30},:,:) /)
+; Crops has to skip the planted fores (30) code
+roc_macro(2,:,:) = (/ dim_sum_n(roc_norm({11:26},:,:),0) + dim_sum_n(roc_norm({35:40},:,:),0)/)
+; Pastures are only pastagem and pastagem_em_AP
+roc_macro(3,:,:) = (/ dim_sum_n(roc_norm({3:4},:,:),0) /)
+
+
+dum_write(roc_macro,"roc_macro")
+dum_write(dim_sum_n(roc_macro,0),"sum_roc_macro")
 
 
 ; PCT_NAT_PFT = arqout->PCT_NAT_PFT({year},:,:,:)
