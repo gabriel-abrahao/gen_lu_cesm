@@ -59,93 +59,89 @@ potveg = arqpot->PCT_PFT
 dimspotveg = dimsizes(potveg)
 npftpot = dimspotveg(0)
 potveg&pft = ispan(0,npftpot-1,1)
-printVarSummary(potveg)
 
 ; TIME LOOP HERE
 ; year = 2015
 do year = syear,eyear
   print("Running year " + year)
 
-roc_PCT_PFT = arqroc->PCT_PFT({year},:,:,:)
-dimsroc = dimsizes(roc_PCT_PFT)
-npftroc = dimsroc(0)
-print(npftroc)
-printVarSummary(roc_PCT_PFT)
+  roc_PCT_PFT = arqroc->PCT_PFT({year},:,:,:)
+  dimsroc = dimsizes(roc_PCT_PFT)
+  npftroc = dimsroc(0)
 
-; The missing fraction of each point to WEIGHT WITH THE ORIGINAL surfdata LATER
-roc_missfrac = roc_PCT_PFT(0,:,:)
+  ; The missing fraction of each point to WEIGHT WITH THE ORIGINAL surfdata LATER
+  roc_missfrac = roc_PCT_PFT(0,:,:)
 
-; Set up a mask w/o almost 100% missing, water or urban values
-roc_mask = where(roc_PCT_PFT(0,:,:)+roc_PCT_PFT(1,:,:)+roc_PCT_PFT(2,:,:) .ge. 99.9,False,True)
+  ; Set up a mask w/o almost 100% missing, water or urban values
+  roc_mask = where(roc_PCT_PFT(0,:,:)+roc_PCT_PFT(1,:,:)+roc_PCT_PFT(2,:,:) .ge. 99.9,False,True)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; 1: Renormalize all values, removing the missing and water fractions.
-; To avoid divisions by zero, we first apply the mask
-masked_roc_PCT_PFT = mask(roc_PCT_PFT,roc_mask,True)
-copy_VarMeta(roc_PCT_PFT,masked_roc_PCT_PFT)
-roc_norm = masked_roc_PCT_PFT
-roc_norm({0:2},:,:) = 0.0
-do i = 3, npftroc-1 ; Start after urban (2)
-  roc_norm(i,:,:) = (100.0*masked_roc_PCT_PFT(i,:,:)) / (100-(masked_roc_PCT_PFT({0},:,:)+masked_roc_PCT_PFT({1},:,:)+masked_roc_PCT_PFT({2},:,:)))
-end do
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ; 1: Renormalize all values, removing the missing and water fractions.
+  ; To avoid divisions by zero, we first apply the mask
+  masked_roc_PCT_PFT = mask(roc_PCT_PFT,roc_mask,True)
+  copy_VarMeta(roc_PCT_PFT,masked_roc_PCT_PFT)
+  roc_norm = masked_roc_PCT_PFT
+  roc_norm({0:2},:,:) = 0.0
+  do i = 3, npftroc-1 ; Start after urban (2)
+    roc_norm(i,:,:) = (100.0*masked_roc_PCT_PFT(i,:,:)) / (100-(masked_roc_PCT_PFT({0},:,:)+masked_roc_PCT_PFT({1},:,:)+masked_roc_PCT_PFT({2},:,:)))
+  end do
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; 2: Separate in macroclasses 0: Primary veg. 1: Planted forest 2: Crop 3: Pasture
-;Since we don't have information on secondary vegetation, all but the planted forests will be considered primary
-nmacro = 4
-roc_macro = new((/nmacro, dimsroc(1), dimsroc(2)/), typeof(roc_norm))
-copy_VarCoords_exl(roc_norm,roc_macro)
-roc_macro!0 = "cod"
-roc_macro&cod = ispan(0,nmacro-1,1)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ; 2: Separate in macroclasses 0: Primary veg. 1: Planted forest 2: Crop 3: Pasture
+  ;Since we don't have information on secondary vegetation, all but the planted forests will be considered primary
+  nmacro = 4
+  roc_macro = new((/nmacro, dimsroc(1), dimsroc(2)/), typeof(roc_norm))
+  copy_VarCoords_exl(roc_norm,roc_macro)
+  roc_macro!0 = "cod"
+  roc_macro&cod = ispan(0,nmacro-1,1)
 
-; Primary are only savanas, savanas_em_AP, florestas, florestas_em_AP. And class_9, that is all zero anyway
-roc_macro(0,:,:) = (/ dim_sum_n(roc_norm({5:9},:,:),0) /)
-; Planted forest is only planted forests (30)
-roc_macro(1,:,:) = (/ roc_norm({30},:,:) /)
-; Crops has to skip the planted fores (30) code
-roc_macro(2,:,:) = (/ dim_sum_n(roc_norm({11:26},:,:),0) + dim_sum_n(roc_norm({35:40},:,:),0)/)
-; Pastures are only pastagem and pastagem_em_AP
-roc_macro(3,:,:) = (/ dim_sum_n(roc_norm({3:4},:,:),0) /)
+  ; Primary are only savanas, savanas_em_AP, florestas, florestas_em_AP. And class_9, that is all zero anyway
+  roc_macro(0,:,:) = (/ dim_sum_n(roc_norm({5:9},:,:),0) /)
+  ; Planted forest is only planted forests (30)
+  roc_macro(1,:,:) = (/ roc_norm({30},:,:) /)
+  ; Crops has to skip the planted fores (30) code
+  roc_macro(2,:,:) = (/ dim_sum_n(roc_norm({11:26},:,:),0) + dim_sum_n(roc_norm({35:40},:,:),0)/)
+  ; Pastures are only pastagem and pastagem_em_AP
+  roc_macro(3,:,:) = (/ dim_sum_n(roc_norm({3:4},:,:),0) /)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; 3: Calculate the final values as a sum of PFT fraction matrices weighted by the macroclasses
-; Macroclass 1, planted forest, represented here as all broadleaf_evergreen_temperate trees (5)
-all_forest = potveg
-all_forest(:,:,:) = 0.0
-all_forest({5},:,:) = 100.0
-; Macroclass 2, all crops, represented as the corn PFT (15), the only working crop PFT in the CLM setup for the RCPs
-all_crop = potveg
-all_crop(:,:,:) = 0.0
-all_crop({15},:,:) = 100.0
-; Macroclass 3, all pasture, represented as C4 grasses (14) for all of Brazil
-all_past = potveg
-all_past(:,:,:) = 0.0
-all_past({14},:,:) = 100.0
-; Turn roc_macro to weights (0-1) with higher dimensionality
-wgt_roc_macro = new((/nmacro, npftpot, dimspotveg(1), dimspotveg(2)/),typeof(roc_macro))
-do i = 0, npftpot-1
-  wgt_roc_macro(:,i,:,:) = roc_macro/100.0
-end do
-; Apply the weights
-roc_out_pft = wgt_roc_macro(0,:,:,:)*potveg + wgt_roc_macro(1,:,:,:)*all_forest + wgt_roc_macro(2,:,:,:)*all_crop + wgt_roc_macro(3,:,:,:)*all_past
-copy_VarMeta(potveg,roc_out_pft)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ; 3: Calculate the final values as a sum of PFT fraction matrices weighted by the macroclasses
+  ; Macroclass 1, planted forest, represented here as all broadleaf_evergreen_temperate trees (5)
+  all_forest = potveg
+  all_forest(:,:,:) = 0.0
+  all_forest({5},:,:) = 100.0
+  ; Macroclass 2, all crops, represented as the corn PFT (15), the only working crop PFT in the CLM setup for the RCPs
+  all_crop = potveg
+  all_crop(:,:,:) = 0.0
+  all_crop({15},:,:) = 100.0
+  ; Macroclass 3, all pasture, represented as C4 grasses (14) for all of Brazil
+  all_past = potveg
+  all_past(:,:,:) = 0.0
+  all_past({14},:,:) = 100.0
+  ; Turn roc_macro to weights (0-1) with higher dimensionality
+  wgt_roc_macro = new((/nmacro, npftpot, dimspotveg(1), dimspotveg(2)/),typeof(roc_macro))
+  do i = 0, npftpot-1
+    wgt_roc_macro(:,i,:,:) = roc_macro/100.0
+  end do
+  ; Apply the weights
+  roc_out_pft = wgt_roc_macro(0,:,:,:)*potveg + wgt_roc_macro(1,:,:,:)*all_forest + wgt_roc_macro(2,:,:,:)*all_crop + wgt_roc_macro(3,:,:,:)*all_past
+  copy_VarMeta(potveg,roc_out_pft)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; 4: To account for the Rochedo border fractions, we get the values from CESMs original file and weight it with the results
-inp_PCT_NAT_PFT = arqinp->PCT_NAT_PFT({year},:,:,:)
-; Turn roc_missfrac to weights
-wgt_roc_missfrac = new((/npftpot, dimspotveg(1), dimspotveg(2)/),typeof(roc_missfrac))
-do i = 0, npftpot-1
-  wgt_roc_missfrac(i,:,:) = roc_missfrac/100.0
-end do
-out_PCT_NAT_PFT = (wgt_roc_missfrac/100.0)*inp_PCT_NAT_PFT + (1-wgt_roc_missfrac/100.0)*roc_out_pft
-out_PCT_NAT_PFT = where(ismissing(out_PCT_NAT_PFT),inp_PCT_NAT_PFT,out_PCT_NAT_PFT)
-out_PCT_NAT_PFT = where(isnan_ieee(out_PCT_NAT_PFT),inp_PCT_NAT_PFT,out_PCT_NAT_PFT) ; Not sure where those NaNs come from, appear to be a border issue
-copy_VarMeta(inp_PCT_NAT_PFT,out_PCT_NAT_PFT)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ; 4: To account for the Rochedo border fractions, we get the values from CESMs original file and weight it with the results
+  inp_PCT_NAT_PFT = arqinp->PCT_NAT_PFT({year},:,:,:)
+  ; Turn roc_missfrac to weights
+  wgt_roc_missfrac = new((/npftpot, dimspotveg(1), dimspotveg(2)/),typeof(roc_missfrac))
+  do i = 0, npftpot-1
+    wgt_roc_missfrac(i,:,:) = roc_missfrac/100.0
+  end do
+  out_PCT_NAT_PFT = (wgt_roc_missfrac/100.0)*inp_PCT_NAT_PFT + (1-wgt_roc_missfrac/100.0)*roc_out_pft
+  out_PCT_NAT_PFT = where(ismissing(out_PCT_NAT_PFT),inp_PCT_NAT_PFT,out_PCT_NAT_PFT)
+  out_PCT_NAT_PFT = where(isnan_ieee(out_PCT_NAT_PFT),inp_PCT_NAT_PFT,out_PCT_NAT_PFT) ; Not sure where those NaNs come from, appear to be a border issue
+  copy_VarMeta(inp_PCT_NAT_PFT,out_PCT_NAT_PFT)
 
-; Write to output "frame"
-print("Writing output frame")
-arqout->PCT_NAT_PFT({year},:,:,:) = (/out_PCT_NAT_PFT/)
+  ; Write to output "frame"
+  arqout->PCT_NAT_PFT({year},:,:,:) = (/out_PCT_NAT_PFT/)
 
 end do ; years
 
