@@ -167,10 +167,33 @@ if (reclass) then
 end if ; reclass
 
 if (smooth) then
-	nysmooth = smeyear - smsyear + 1
+	nysmooth = smeyear - smsyear
 	sta_PCT_PFT = arqout->PCT_PFT({smsyear},:,:,:)
 	end_PCT_PFT = arqout->PCT_PFT({smeyear},:,:,:)
+	dimsin = dimsizes(sta_PCT_PFT)
+	npft = dimsin(0)
 	printVarSummary(sta_PCT_PFT)
+	printVarSummary(end_PCT_PFT)
+	delta = (end_PCT_PFT - sta_PCT_PFT)/nysmooth
+
+	; START TIME LOOP
+	c = 0
+	do year = smsyear+1,smeyear-1
+		c = c + 1
+		print("Smoothing year " + year + " (from " + smsyear + " to " + smeyear + ")")
+		inp_PCT_PFT = arqout->PCT_PFT({year},:,:,:)
+		; Add the delta to the starting value
+		out_PCT_PFT = sta_PCT_PFT + delta*c
+		; Make sure its within range
+		out_PCT_PFT = where(out_PCT_PFT.gt.100.0,100.0,where(out_PCT_PFT.lt.0.0,0.0,out_PCT_PFT))
+		; Make sure it adds up to the same amount as the input
+		sum_inp_PCT_PFT = dim_sum_n(inp_PCT_PFT,0) 
+		do i = 0, npft-1
+			out_PCT_PFT(i,:,:) = out_PCT_PFT(i,:,:)*sum_inp_PCT_PFT/100.0
+		end do
+
+		arqout->PCT_PFT({year},:,:,:) = (/out_PCT_PFT/)
+	end do
 end if
 
 ; dum_write(inp_PCT_PFT,"inp_PCT_PFT")
