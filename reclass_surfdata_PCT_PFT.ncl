@@ -25,7 +25,7 @@ rocfname        = "fraction_" + scenario + "_comp_2012-2050.nc"
 potfname        = "mksrf_pft_potv_CN_0.9x1.25.nc"
 
 syear           = 2012
-eyear           = 2012
+eyear           = 2050
 
 forcenewcopy    = False ; Force recopying the reference file, even if the output exists
 
@@ -149,16 +149,17 @@ do year = syear,eyear
   end do
 
 
-dum_write(inp_PCT_PFT,"inp_PCT_PFT")
-dum_write(dim_sum_n(inp_PCT_PFT,0),"sum_inp_PCT_PFT")
-dum_write(out_PCT_PFT,"out_PCT_PFT")
-dum_write(dim_sum_n(out_PCT_PFT,0),"sum_out_PCT_PFT")
 
   ; Write to output "frame"
   print("Writing output frame " + year)
   arqout->PCT_PFT({year},:,:,:) = (/out_PCT_PFT/)
 
 end do ; years
+
+; dum_write(inp_PCT_PFT,"inp_PCT_PFT")
+; dum_write(dim_sum_n(inp_PCT_PFT,0),"sum_inp_PCT_PFT")
+; dum_write(out_PCT_PFT,"out_PCT_PFT")
+; dum_write(dim_sum_n(out_PCT_PFT,0),"sum_out_PCT_PFT")
 
 ; dum_write(out_PCT_NAT_PFT,"out_PCT_NAT_PFT")
 ; dum_write(dim_sum_n(out_PCT_NAT_PFT,0),"sum_out_PCT_NAT_PFT")
