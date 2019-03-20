@@ -21,7 +21,8 @@ return(pos)
 end
 begin
 
-inpfile       =	"../out_surfdata/surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_rochedo_weg_c100319.nc"
+;inpfile       =	"../out_surfdata/surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_rochedo_weg_c100319.nc"
+inpfile       =	"../out_surfdata/surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_rochedo_seg_c100319.nc"
 varname       =	"PCT_PFT"
 
 ;syear		=	2005

@@ -19,8 +19,10 @@ outputfolder    = "out_surfdata/"
 ; weg or seg
 scenario        = "seg"
 
-inpfname        = "surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_c100319.nc"
-outfname        = "surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_rochedo_" + scenario + "_c100319.nc"
+;inpfname        = "surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_c100319.nc"
+;outfname        = "surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_rochedo_" + scenario + "_c100319.nc"
+inpfname        = "surfdata.pftdyn_0.9x1.25_rcp2.6_simyr1850-2100_c100323.nc"
+outfname        = "surfdata.pftdyn_0.9x1.25_rcp2.6_simyr1850-2100_rochedo_" + scenario + "_c100323.nc"
 
 rocfname        = "fraction_" + scenario + "_comp_2012-2050.nc"
 
