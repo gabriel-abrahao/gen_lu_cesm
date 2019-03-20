@@ -27,7 +27,10 @@ varname       =	"PCT_PFT"
 syear		=	2005
 eyear		=	2014
 
-foutname      =	"transition_frac_" + syear + "_" + eyear + ".nc"
+rcpstr		=	systemfunc("echo " + inpfile + "| grep -o 'rcp[0-9]\.[0-9]'")
+scenariostr	=	systemfunc("echo " + inpfile + "| grep -o 'rochedo_[a-zA-Z]\{3\}'")
+
+foutname      =	"transition_frac_" + scenariostr + "_" + rcpstr + "_" + syear + "_" + eyear + ".nc"
 
 minval		=	0.
 maxval		=	100.
@@ -244,6 +247,9 @@ end do
 resp = True
 ; resp@gsnDraw = False
 resp@gsnFrame = False
+
+resp@gsnPanelMainString = rcpstr + " " + scenariostr
+
 ;resp@gsnPanelRight = 0.9
 ;resp@gsnPanelBottom = 0.1
 resp@gsnPanelLabelBar = True
