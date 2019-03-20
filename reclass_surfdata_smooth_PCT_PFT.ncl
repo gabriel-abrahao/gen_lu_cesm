@@ -17,7 +17,7 @@ potvegfolder    = "out_potveg/"
 outputfolder    = "out_surfdata/"
 
 ; weg or seg
-scenario        = "weg"
+scenario        = "seg"
 
 inpfname        = "surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_c100319.nc"
 outfname        = "surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_rochedo_" + scenario + "_c100319.nc"
@@ -36,7 +36,7 @@ smeyear		= 2012
 
 forcenewcopy    = False ; Force recopying the reference file, even if the output exists
 
-reclass		= False ; Do the reclassification step
+reclass		= True ; Do the reclassification step
 smooth		= True ; Do the smoothing step
 
 inpfpath = inputfolder + inpfname
@@ -195,6 +195,12 @@ if (smooth) then
 		arqout->PCT_PFT({year},:,:,:) = (/out_PCT_PFT/)
 	end do
 end if
+
+; Add some comments as a global attribute
+globalatts = True
+globalatts@reclass_rochedo_comments = arqout@reclass_rochedo_comments + "\n" +systemfunc("date") + ": Ran " + get_script_name() + " with reclass=" + reclass + "(" + syear + "-" + eyear + ") " +" and smooth=" + smooth + "(" + smsyear + "-" + smeyear + ")" 
+
+fileattdef(arqout,globalatts)
 
 ; dum_write(inp_PCT_PFT,"inp_PCT_PFT")
 ; dum_write(dim_sum_n(inp_PCT_PFT,0),"sum_inp_PCT_PFT")
