@@ -24,13 +24,15 @@ begin
 inpfile       =	"../out_surfdata/surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_rochedo_weg_c100319.nc"
 varname       =	"PCT_PFT"
 
-syear		=	2005
-eyear		=	2014
+;syear		=	2005
+;eyear		=	2014
+years		=	ispan(2000,2050,5)
 
 rcpstr		=	systemfunc("echo " + inpfile + "| grep -o 'rcp[0-9]\.[0-9]'")
 scenariostr	=	systemfunc("echo " + inpfile + "| grep -o 'rochedo_[a-zA-Z]\{3\}'")
 
-foutname      =	"transition_frac_" + scenariostr + "_" + rcpstr + "_" + syear + "_" + eyear + ".nc"
+;foutname      =	"transition_frac_" + scenariostr + "_" + rcpstr + "_" + syear + "_" + eyear + ".nc"
+foutname      =	"transition_frac_" + scenariostr + "_" + rcpstr + "_" + min(years) + "_" + max(years) + ".nc"
 
 minval		=	0.
 maxval		=	100.
@@ -53,7 +55,8 @@ names = str_get_field(tablepft,2,"	")
 
 
 arqinp = addfile(inpfile,"r")
-varinp = arqinp->$varname$({syear:eyear},:,:,:)
+varinp = arqinp->$varname$({years},:,:,:)
+;varinp = arqinp->$varname$({syear:eyear},:,:,:)
 
 varinp&lsmlat = arqinp->LATIXY(:,0)
 varinp&lsmlon = arqinp->LONGXY(0,:)
@@ -65,7 +68,8 @@ varinp&lsmlon@units = "degrees_east"
 dims = dimsizes(varinp)
 npft = dims(1)
 nusepft = dimsizes(usepfts)
-nyears = eyear-syear+1
+;nyears = eyear-syear+1
+nyears = dimsizes(years)
 printVarSummary(varinp)
 
 ;dum_write(varinp,"varinp")
@@ -169,11 +173,13 @@ res@gsnRightStringFontHeightF = 0.04
 res@gsnLeftStringFontHeightF = res@gsnRightStringFontHeightF
 res@gsnCenterStringFontHeightF = res@gsnRightStringFontHeightF
  
-t = -1
-do year = syear,eyear
-	t = t+1
+;t = -1
+;do year = syear,eyear
+;	t = t+1
+do t = 0, nyears-1 
 	do i = 0,nusepft-1
 		pft = usepfts(i)
+		year = years(t)
 		;res@gsnLeftString = names(usepfts(i))
 		res@gsnCenterString = year + "~C~" + str_get_field(names(usepfts(i)),1,"_")
 		;if (i.eq.0) then
@@ -256,6 +262,8 @@ resp@gsnPanelLabelBar = True
 ;resp@lbTitleString = year
 resp@lbTitlePosition = "Bottom"
 ;resp@lbOrientation = "Vertical"
+resp@lbJustification = "TopCenter"
+resp@lbTitleString = "PCT_PFT"
 
 resp@gsnMaximize = True
 gsn_panel(wks,ndtooned(plots),(/nusepft,nyears/),resp)
@@ -279,7 +287,7 @@ gsn_panel(wks,ndtooned(plots),(/nusepft,nyears/),resp)
 ;end do
 
 
-
+;drawNDCGrid(wks)
 
 ; maximize_output(wks,False)
 frame(wks)
