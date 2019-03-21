@@ -17,12 +17,12 @@ potvegfolder    = "out_potveg/"
 outputfolder    = "out_surfdata/"
 
 ; weg or seg
-scenario        = "seg"
+scenario        = "weg"
 
-;inpfname        = "surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_c100319.nc"
-;outfname        = "surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_rochedo_" + scenario + "_c100319.nc"
-inpfname        = "surfdata.pftdyn_0.9x1.25_rcp2.6_simyr1850-2100_c100323.nc"
-outfname        = "surfdata.pftdyn_0.9x1.25_rcp2.6_simyr1850-2100_rochedo_" + scenario + "_c100323.nc"
+inpfname        = "surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_c100319.nc"
+outfname        = "surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_rochedo_" + scenario + "_c100319.nc"
+;inpfname        = "surfdata.pftdyn_0.9x1.25_rcp2.6_simyr1850-2100_c100323.nc"
+;outfname        = "surfdata.pftdyn_0.9x1.25_rcp2.6_simyr1850-2100_rochedo_" + scenario + "_c100323.nc"
 
 rocfname        = "fraction_" + scenario + "_comp_2012-2050.nc"
 
@@ -37,6 +37,7 @@ smsyear		= 2005
 smeyear		= 2012
 
 forcenewcopy    = False ; Force recopying the reference file, even if the output exists
+checksums	= True	; Check differences between the PFT sums in input and output files
 
 reclass		= True ; Do the reclassification step
 smooth		= True ; Do the smoothing step
@@ -155,10 +156,20 @@ if (reclass) then
 		; 5: Re-normalize to the actual sum of PCT_PFT, that does not add up to 100 because of urban, wetland and other fractions that are not accounted for
 
 		sum_inp_PCT_PFT = dim_sum_n(inp_PCT_PFT,0) 
+		sum_out_PCT_PFT = dim_sum_n(out_PCT_PFT,0)
+		sum_out_PCT_PFT = where(sum_out_PCT_PFT.eq.0,sum_out_PCT_PFT@_FillValue,sum_out_PCT_PFT)
 		do i = 0, npftpot-1
-			out_PCT_PFT(i,:,:) = out_PCT_PFT(i,:,:)*sum_inp_PCT_PFT/100.0
+			;out_PCT_PFT(i,:,:) = out_PCT_PFT(i,:,:)*sum_inp_PCT_PFT/100.0
+			out_PCT_PFT(i,:,:) = where(.not.ismissing(sum_out_PCT_PFT),(out_PCT_PFT(i,:,:)/sum_out_PCT_PFT)*sum_inp_PCT_PFT,inp_PCT_PFT(i,:,:))
 		end do
 
+		if (checksums) then
+			sum_inp_PCT_PFT = dim_sum_n(inp_PCT_PFT,0)
+			sum_out_PCT_PFT = dim_sum_n(out_PCT_PFT,0)
+		       	diffsum = sum_out_PCT_PFT - sum_inp_PCT_PFT
+			print("Checksum error: "+max((diffsum)))
+			dum_write(diffsum,"diffsum")
+		end if
 
 
 		; Write to output "frame"
@@ -190,9 +201,20 @@ if (smooth) then
 		out_PCT_PFT = where(out_PCT_PFT.gt.100.0,100.0,where(out_PCT_PFT.lt.0.0,0.0,out_PCT_PFT))
 		; Make sure it adds up to the same amount as the input
 		sum_inp_PCT_PFT = dim_sum_n(inp_PCT_PFT,0) 
+		sum_out_PCT_PFT = dim_sum_n(out_PCT_PFT,0) 
+		sum_out_PCT_PFT = where(sum_out_PCT_PFT.eq.0,sum_out_PCT_PFT@_FillValue,sum_out_PCT_PFT)
 		do i = 0, npft-1
-			out_PCT_PFT(i,:,:) = out_PCT_PFT(i,:,:)*sum_inp_PCT_PFT/100.0
+			;out_PCT_PFT(i,:,:) = out_PCT_PFT(i,:,:)*sum_inp_PCT_PFT/100.0
+			out_PCT_PFT(i,:,:) = where(.not.ismissing(sum_out_PCT_PFT),(out_PCT_PFT(i,:,:)/sum_out_PCT_PFT)*sum_inp_PCT_PFT,inp_PCT_PFT(i,:,:))
 		end do
+
+		if (checksums) then
+			sum_inp_PCT_PFT = dim_sum_n(inp_PCT_PFT,0)
+			sum_out_PCT_PFT = dim_sum_n(out_PCT_PFT,0)
+		       	diffsum = sum_out_PCT_PFT - sum_inp_PCT_PFT
+			print("Checksum error: "+max((diffsum)))
+			dum_write(diffsum,"diffsum")
+		end if
 
 		arqout->PCT_PFT({year},:,:,:) = (/out_PCT_PFT/)
 	end do
