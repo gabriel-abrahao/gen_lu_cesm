@@ -1,3 +1,4 @@
+import sys
 import os
 # import Nio
 import xarray as xr
@@ -5,6 +6,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import numba
 from numba import jit
+import dask
+from dask import delayed
+import psutil
 from rasterio.plot import show
 
 def main():
@@ -33,26 +37,59 @@ def main():
     year = times[0]
 
     yinparr = inparr.sel(time = year, method = 'nearest')
+
     yinparr = yinparr.sel(lat = slice(-10.0,0.0), lon = slice(-70.,-60.))
+    codarr = codarr.sel(lat = slice(-10.0,0.0), lon = slice(-70.,-60.))
+    # yinparr = yinparr.sel(lat = slice(-2.0,0.0), lon = slice(-62.,-60.))
+    # codarr = codarr.sel(lat = slice(-2.0,0.0), lon = slice(-62.,-60.))
     # show(yinparr)
+    # show(codarr)
 
     cod = 5
 
     # vec = yinparr.values[10,:]
-    # print(sum1d(vec))
-    mat = yinparr.values[10:20,10:20]
-    print(mat)
-    print(yinparr.dtype)
-    print(sum2d(mat))
+    # # print(sum1d(vec)
+    # mat = yinparr.values[10:20,10:20]
+    # codmat = codarr.values[10:20,10:20]
+    # print(mat)
+    # print(yinparr.dtype)
+    # print(sum2d(mat))
     # print(sum2d(yinparr.values))
 
     # outmat = np.zeros((len(cods),len(clas)), dtype = inparr.dtype)
-    outmat = np.zeros((maxcod+1,maxcla+1), dtype = inparr.dtype)
-    print(countclasses(yinparr.values.astype(int),outmat))
+    outmat = np.zeros((maxcod+1,maxcla+1), dtype = np.float64)
+
+    chunksize = 100
+    # print(countclasses(yinparr.values.astype(int),outmat))
+    array = dask.array.from_array(yinparr.values.astype(int), chunks = chunksize)
+    codarray = dask.array.from_array(codarr.values.astype(int), chunks = chunksize)
+    # array = yinparr.values.astype(int)
+    # codarray = codarr.values.astype(int)
+    print(sys.getsizeof(array))
+    print(sys.getsizeof(codarray))
+    # exit()
+    # filloutmat = countclasses_cod(array, codarray, outmat)
+    # filloutmat = countclassesc_cod(mat.astype(int),codmat.astype(int), outmat)
+    # print(np.isfinite(codarr.values[0,0]))
+    # lala = filloutmat.compute()
 
     # icods = {cods[i]:i for i in range(len(cods))}
     # iclas = {clas[i]:i for i in range(len(clas))}
     # print(iclas)
+
+@delayed
+# @jit(nopython = True, parallel = True)
+@jit(nopython = True)
+def countclasses_cod(array,codarray,outmat):
+    # for i in numba.prange(array.shape[0]):
+        # for j in numba.prange(array.shape[1]):
+    for i in range(array.shape[0]):
+        for j in range(array.shape[1]):
+            if np.isfinite(codarray[i,j]) & np.isfinite(array[i,j]):
+                # print(outmat[codarray[i,j],array[i,j]])
+                outmat[codarray[i,j],array[i,j]] += 1
+    # print(np.max(outmat))
+    return outmat
 
 @jit(nopython = True)
 def countclasses(array,outmat):
