@@ -24,8 +24,8 @@ outfname        = "surfdata.pftdyn_0.9x1.25_simyr1850-2005_" + scenario + "_c091
 potfname        = "mksrf_pft_potv_CN_0.9x1.25.nc"
 
 ; Reclassification period
-syear           = 2012
-eyear           = 2050
+syear           = 1950
+eyear           = 2005
 
 ; Smoothing period, must contain some year in the reclassification period to make sense
 smsyear		= 2005
@@ -35,7 +35,7 @@ forcenewcopy    = False ; Force recopying the reference file, even if the output
 checksums	= True	; Check differences between the PFT sums in input and output files
 
 reclass		= True ; Do the reclassification step
-smooth		= True ; Do the smoothing step
+smooth		= False ; Do the smoothing step
 
 inpfpath = inputfolder + inpfname
 outfpath = outputfolder + outfname
@@ -93,12 +93,15 @@ if (reclass) then
 		; do i = 3, npftroc-1 ; Start after urban (2)
 		; 	roc_norm(i,:,:) = (100.0*masked_roc_PCT_PFT(i,:,:)) / (100-(masked_roc_PCT_PFT({0},:,:)+masked_roc_PCT_PFT({1},:,:)+masked_roc_PCT_PFT({2},:,:)))
 		; end do
+		veg_missfrac = new((/dimsveg(1), dimsveg(2)/), typeof(potveg))
+		veg_missfrac = 0.0
+		veg_mask = new((/dimsveg(1), dimsveg(2)/), logical)
 
 		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 		; 2: Separate in macroclasses 0: Primary veg. 1: Planted forest 2: Crop 3: Pasture
 		;Since we don't have information on secondary vegetation, all but the planted forests will be considered primary
 		nmacro = 4
-		veg_macro = new((/nmacro, dimsveg(1), dimsveg(2)/), typeof(potveg)
+		veg_macro = new((/nmacro, dimsveg(1), dimsveg(2)/), typeof(potveg))
 		copy_VarCoords_exl(potveg,veg_macro)
 		veg_macro!0 = "cod"
 		veg_macro&cod = ispan(0,nmacro-1,1)
@@ -112,8 +115,6 @@ if (reclass) then
 		; Pastures are only pastagem and pastagem_em_AP
 		veg_macro(3,:,:) = 0.0
 
-		printVarSummary(veg_macro)
-		exit
 
 		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 		; 3: Calculate the final values as a sum of PFT fraction matrices weighted by the macveglasses
