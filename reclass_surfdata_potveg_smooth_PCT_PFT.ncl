@@ -21,7 +21,8 @@ outfname        = "surfdata.pftdyn_0.9x1.25_simyr1850-2005_" + scenario + "_c091
 
 ; rocfname        = "fraction_" + scenario + "_comp_2012-2050.nc"
 
-potfname        = "mksrf_pft_potv_CN_0.9x1.25.nc"
+;potfname        = "mksrf_pft_potv_CN_0.9x1.25.nc"
+potfname        = "mksrf_pft_potveg.c081009_0.9x1.25.nc"
 
 ; Reclassification period
 syear           = 1950

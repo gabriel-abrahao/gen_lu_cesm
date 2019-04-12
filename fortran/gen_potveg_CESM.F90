@@ -31,9 +31,11 @@ program gen_potveg_CESM
 
   ! reffname = trim(ADJUSTL(inputfolder))//"surfdata.pftdyn_0.9x1.25_simyr1850-2005_c091008.nc"
   reffname = trim(ADJUSTL(inputfolder))//"min_surfdata.nc"
-  vegfname = trim(ADJUSTL(inputfolder))//"mksrf_pft_potv_CN.nc"
+  ! vegfname = trim(ADJUSTL(inputfolder))//"mksrf_pft_potv_CN.nc"
+  vegfname = trim(ADJUSTL(inputfolder))//"mksrf_pft_potveg.c081009.nc"
 
-  outfname = trim(ADJUSTL(outputfolder))//"mksrf_pft_potv_CN_0.9x1.25.nc"
+  ! outfname = trim(ADJUSTL(outputfolder))//"mksrf_pft_potv_CN_0.9x1.25.nc"
+  outfname = trim(ADJUSTL(outputfolder))//"mksrf_pft_potveg.c081009_0.9x1.25.nc"
 
 ! Get the sizes of the 4D reference file
   call get_ref_dimzises(reffname,"PCT_PFT",refnlat,refnlon,ntim,npft)

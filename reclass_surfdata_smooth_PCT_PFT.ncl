@@ -19,14 +19,15 @@ outputfolder    = "out_surfdata/"
 ; weg or seg
 scenario        = "seg"
 
-;inpfname        = "surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_c100319.nc"
-;outfname        = "surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_rochedo_" + scenario + "_c100319.nc"
+; inpfname        = "surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_c100319.nc"
+; outfname        = "surfdata.pftdyn_0.9x1.25_rcp8.5_simyr1850-2100_rochedo_" + scenario + "_c100319.nc"
 inpfname        = "surfdata.pftdyn_0.9x1.25_rcp2.6_simyr1850-2100_c100323.nc"
 outfname        = "surfdata.pftdyn_0.9x1.25_rcp2.6_simyr1850-2100_rochedo_" + scenario + "_c100323.nc"
 
 rocfname        = "fraction_" + scenario + "_comp_2012-2050.nc"
 
-potfname        = "mksrf_pft_potv_CN_0.9x1.25.nc"
+; potfname        = "mksrf_pft_potv_CN_0.9x1.25.nc"
+potfname        = "mksrf_pft_potveg.c081009_0.9x1.25.nc"
 
 ; Reclassification period
 syear           = 2012
@@ -155,7 +156,7 @@ if (reclass) then
 		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 		; 5: Re-normalize to the actual sum of PCT_PFT, that does not add up to 100 because of urban, wetland and other fractions that are not accounted for
 
-		sum_inp_PCT_PFT = dim_sum_n(inp_PCT_PFT,0) 
+		sum_inp_PCT_PFT = dim_sum_n(inp_PCT_PFT,0)
 		sum_out_PCT_PFT = dim_sum_n(out_PCT_PFT,0)
 		sum_out_PCT_PFT = where(sum_out_PCT_PFT.eq.0,sum_out_PCT_PFT@_FillValue,sum_out_PCT_PFT)
 		do i = 0, npftpot-1
@@ -200,8 +201,8 @@ if (smooth) then
 		; Make sure its within range
 		out_PCT_PFT = where(out_PCT_PFT.gt.100.0,100.0,where(out_PCT_PFT.lt.0.0,0.0,out_PCT_PFT))
 		; Make sure it adds up to the same amount as the input
-		sum_inp_PCT_PFT = dim_sum_n(inp_PCT_PFT,0) 
-		sum_out_PCT_PFT = dim_sum_n(out_PCT_PFT,0) 
+		sum_inp_PCT_PFT = dim_sum_n(inp_PCT_PFT,0)
+		sum_out_PCT_PFT = dim_sum_n(out_PCT_PFT,0)
 		sum_out_PCT_PFT = where(sum_out_PCT_PFT.eq.0,sum_out_PCT_PFT@_FillValue,sum_out_PCT_PFT)
 		do i = 0, npft-1
 			;out_PCT_PFT(i,:,:) = out_PCT_PFT(i,:,:)*sum_inp_PCT_PFT/100.0
@@ -222,7 +223,7 @@ end if
 
 ; Add some comments as a global attribute
 globalatts = True
-globalatts@reclass_rochedo_comments = arqout@reclass_rochedo_comments + "\n" +systemfunc("date") + ": Ran " + get_script_name() + " with reclass=" + reclass + "(" + syear + "-" + eyear + ") " +" and smooth=" + smooth + "(" + smsyear + "-" + smeyear + ")" 
+globalatts@reclass_rochedo_comments = arqout@reclass_rochedo_comments + "\n" +systemfunc("date") + ": Ran " + get_script_name() + " with reclass=" + reclass + "(" + syear + "-" + eyear + ") " +" and smooth=" + smooth + "(" + smsyear + "-" + smeyear + ")"
 
 fileattdef(arqout,globalatts)
 
